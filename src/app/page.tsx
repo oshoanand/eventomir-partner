@@ -7,7 +7,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Target, Banknote, BarChart } from "lucide-react";
+import { Target, Banknote, BarChart, ArrowRight, LogIn } from "lucide-react";
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
@@ -43,14 +43,21 @@ const AdvantageCard = ({
 );
 
 export default async function PartnershipLandingPage() {
+  // Fetch session on the server side
   const session = await getServerSession(authOptions);
-  const isPartner = session?.user?.role === "partner";
+
+  // Since NextAuth on this app strictly enforces the partner role,
+  // if there is a session, they are guaranteed to be a partner.
+  const isPartner = !!session?.user;
+
+  // Get the main app URL for the login redirect
+  const mainAppUrl =
+    process.env.NEXT_PUBLIC_WEB_APP_URL || "http://localhost:3000";
 
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
       <section className="relative pt-20 pb-24 md:pt-32 md:pb-32 text-center bg-gradient-to-b from-primary/10 via-background to-background px-4 overflow-hidden">
-        {/* Important: Added mx-auto for perfect centering */}
         <div className="container mx-auto max-w-4xl relative z-10">
           <Badge
             variant="outline"
@@ -67,7 +74,21 @@ export default async function PartnershipLandingPage() {
             фотографов, ведущих и диджеев на платформу и получайте высокий
             процент с их оплат.
           </p>
-          {!isPartner && (
+
+          {/* Dynamic Call to Action based on Auth State */}
+          {isPartner ? (
+            <div className="flex justify-center">
+              <Link href="/dashboard">
+                <Button
+                  size="lg"
+                  className="h-14 px-8 text-lg shadow-lg hover:shadow-xl transition-all"
+                >
+                  Перейти в личный кабинет{" "}
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          ) : (
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link href="#register-form">
                 <Button
@@ -77,6 +98,16 @@ export default async function PartnershipLandingPage() {
                   Начать зарабатывать
                 </Button>
               </Link>
+              {/* Redirects to the Main App to handle the login -> SSO flow */}
+              <a href={`${mainAppUrl}/login`}>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-14 px-8 text-lg w-full sm:w-auto transition-all"
+                >
+                  <LogIn className="mr-2 h-5 w-5" /> Уже партнер? Войти
+                </Button>
+              </a>
             </div>
           )}
         </div>
@@ -121,7 +152,7 @@ export default async function PartnershipLandingPage() {
         </div>
       </section>
 
-      {/* Registration Form Section */}
+      {/* Registration Form Section (Hidden if already a partner) */}
       {!isPartner && (
         <section
           id="register-form"

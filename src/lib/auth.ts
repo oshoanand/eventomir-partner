@@ -16,28 +16,86 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
+        transferToken: { label: "Transfer Token", type: "text" }, // Added to accept the SSO token
       },
 
       async authorize(credentials) {
         try {
-          // 1. Validate credentials input
+          const secret = process.env.NEXTAUTH_SECRET;
+          if (!secret) {
+            throw new Error("Ошибка конфигурации сервера");
+          }
+
+          // =================================================================
+          // SCENARIO 1: SEAMLESS LOGIN VIA TRANSFER TOKEN (SSO from Main App)
+          // =================================================================
+          if (credentials?.transferToken) {
+            try {
+              // 1. Verify the JWT signature
+              const decoded = jwt.verify(
+                credentials.transferToken,
+                secret,
+              ) as jwt.JwtPayload;
+
+              // 2. Fetch fresh user data from DB to ensure they still exist
+              const user = await prisma.user.findUnique({
+                where: { id: decoded.id },
+              });
+
+              if (!user) {
+                throw new Error("Пользователь не найден.");
+              }
+
+              // 3. STRICT ROLE CHECK: Only partners allowed
+              if (user.role !== "partner") {
+                throw new Error(
+                  "Доступ запрещен. Этот портал только для партнеров.",
+                );
+              }
+
+              // 4. Success! Return user to establish session
+              return {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role,
+                accessToken: credentials.transferToken, // Reuse the verified token
+              };
+            } catch (tokenError) {
+              console.error("Token Verification Error:", tokenError);
+              throw new Error(
+                "Срок действия ссылки истек или токен недействителен. Пожалуйста, авторизуйтесь заново.",
+              );
+            }
+          }
+
+          // =================================================================
+          // SCENARIO 2: DIRECT EMAIL & PASSWORD LOGIN ON PARTNER APP
+          // =================================================================
           if (!credentials?.email || !credentials?.password) {
             throw new Error(
               "Требуется указать адрес электронной почты и пароль",
             );
           }
 
-          // 2. Find user in database
+          // 1. Find user in database
           const user = await prisma.user.findUnique({
             where: {
               email: credentials.email,
             },
           });
 
-          // 3. Verify user exists AND has a password
-          // We combine these checks to prevent user enumeration (security best practice)
+          // 2. Verify user exists AND has a password
           if (!user || !user.password) {
             throw new Error("Неверный адрес электронной почты или пароль!");
+          }
+
+          // 3. STRICT ROLE CHECK: Block Customers/Performers from logging in here
+          if (user.role !== "partner") {
+            throw new Error(
+              "Доступ запрещен. Кабинет партнера находится на другой платформе.",
+            );
           }
 
           // 4. Verify password
@@ -50,13 +108,7 @@ export const authOptions: NextAuthOptions = {
             throw new Error("Неверный адрес электронной почты или пароль!");
           }
 
-          // 5. Generate Token
-          const secret = process.env.NEXTAUTH_SECRET;
-
-          if (!secret) {
-            throw new Error("Server configuration error");
-          }
-
+          // 5. Generate fresh JWT Token
           const token = jwt.sign(
             {
               id: user.id,
@@ -81,22 +133,26 @@ export const authOptions: NextAuthOptions = {
             accessToken: token,
           };
         } catch (error: any) {
-          // 1. Log the actual technical error to the server console for the developer
           console.error("Authorize Error:", error);
 
-          // 2. Determine if it's an error we manually threw above (User-friendly)
-          // or a system error (Prisma/DB crash)
-          const isCustomError =
-            error.message ===
-              "Требуется указать адрес электронной почты и пароль" ||
-            error.message === "Неверный адрес электронной почты или пароль!";
+          // Let custom user-friendly messages pass through to the frontend UI
+          const customErrors = [
+            "Требуется указать адрес электронной почты и пароль",
+            "Неверный адрес электронной почты или пароль!",
+            "Доступ запрещен. Этот портал только для партнеров.",
+            "Доступ запрещен. Кабинет партнера находится на другой платформе.",
+            "Срок действия ссылки истек или токен недействителен. Пожалуйста, авторизуйтесь заново.",
+            "Пользователь не найден.",
+          ];
 
-          if (isCustomError) {
+          if (customErrors.includes(error.message)) {
             throw new Error(error.message);
           }
 
-          // 3. If it's a database/prisma error, mask it with a generic message
-          throw new Error("Проверьте свой адрес электронной почты еще раз!");
+          // Mask unhandled DB/system crashes
+          throw new Error(
+            "Внутренняя ошибка сервера. Пожалуйста, попробуйте позже.",
+          );
         }
       },
     }),
@@ -109,8 +165,8 @@ export const authOptions: NextAuthOptions = {
         token.image = user.image ? user.image.toString() : null;
         token.name = user.name ? user.name.toString() : "";
         token.email = user.email ? user.email.toString() : "";
-        token.accessToken = user.accessToken;
-        token.role = user.role;
+        token.accessToken = (user as any).accessToken;
+        token.role = (user as any).role;
       }
       return token;
     },
@@ -121,7 +177,7 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name as string;
         session.user.email = token.email as string;
         session.user.role = token.role as string;
-        session.user.accessToken = token.accessToken as string;
+        (session.user as any).accessToken = token.accessToken as string;
       }
       return session;
     },

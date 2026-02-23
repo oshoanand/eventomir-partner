@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useSession, signIn } from "next-auth/react";
 import {
   Card,
   CardContent,
@@ -24,7 +26,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { useSession } from "next-auth/react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
   ChartContainer,
@@ -39,9 +40,9 @@ import {
   Eye,
   AlertCircle,
   Loader2,
+  ShieldAlert,
 } from "lucide-react";
 
-// Import React Query hooks
 import {
   usePartnerDashboard,
   useUpdatePaymentDetails,
@@ -61,7 +62,6 @@ const DashboardSkeleton = () => (
   </div>
 );
 
-// Chart Configuration for Shadcn UI
 const chartConfig = {
   total: {
     label: "Доход (₽)",
@@ -72,19 +72,61 @@ const chartConfig = {
 export default function PartnerDashboardPage() {
   const { data: session, status } = useSession();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  // 1. Fetch Data using React Query
+  const token = searchParams.get("v");
+  const hasAttemptedTransfer = useRef(false);
+
+  // Environment variables
+  const mainAppUrl =
+    process.env.NEXT_PUBLIC_WEB_APP_URL || "http://localhost:3000";
+
+  // --- 1. AUTHENTICATION & TRANSFER LOGIC ---
+  useEffect(() => {
+    // If the user arrived with a transfer token, log them in silently
+    if (token && !hasAttemptedTransfer.current) {
+      hasAttemptedTransfer.current = true;
+      signIn("credentials", {
+        transferToken: token,
+        redirect: false,
+      }).then((res) => {
+        if (res?.ok) {
+          // Clean the URL so the token isn't sitting in the address bar
+          router.replace("/dashboard");
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Ошибка",
+            description: "Срок действия ссылки истек. Авторизуйтесь заново.",
+          });
+          window.location.href = `${mainAppUrl}/login`;
+        }
+      });
+    } else if (status === "unauthenticated" && !token) {
+      // If not logged in and no token is present, bounce them back to the main app
+      window.location.href = `${mainAppUrl}/login`;
+    }
+  }, [token, status, router, mainAppUrl, toast]);
+
+  // --- 2. DATA FETCHING ---
   const userId = session?.user?.id;
-  const { data: dashboardData, isLoading, error } = usePartnerDashboard(userId);
 
-  // 2. Mutations
+  // Prevent React Query from running until we have a verified user session
+  const isReadyToFetch =
+    status === "authenticated" && !!userId && session?.user?.role === "partner";
+
+  const {
+    data: dashboardData,
+    isLoading,
+    error,
+  } = usePartnerDashboard(isReadyToFetch ? userId : undefined);
+
   const updatePaymentMutation = useUpdatePaymentDetails();
   const requestPayoutMutation = useRequestPayout();
 
-  // 3. Local State for Input
   const [paymentDetails, setPaymentDetails] = useState("");
 
-  // Sync input when data loads
   useEffect(() => {
     if (dashboardData?.paymentDetails) {
       setPaymentDetails(dashboardData.paymentDetails);
@@ -94,7 +136,7 @@ export default function PartnerDashboardPage() {
   // --- HANDLERS ---
   const handleCopyToClipboard = () => {
     if (!dashboardData) return;
-    const referralLink = `${process.env.NEXT_PUBLIC_CLIENT_STORE_URL || "https://eventomir.ru"}/register?ref=${dashboardData.referralId}`;
+    const referralLink = `${mainAppUrl}/register?ref=${dashboardData.referralId}`;
     navigator.clipboard.writeText(referralLink);
     toast({
       title: "Скопировано!",
@@ -140,10 +182,33 @@ export default function PartnerDashboardPage() {
   };
 
   // --- RENDER STATES ---
-  if (status === "loading" || isLoading) {
+
+  // Show skeleton if NextAuth is still checking session, or if we are actively logging in via token
+  if (
+    status === "loading" ||
+    (token && !hasAttemptedTransfer.current) ||
+    isLoading
+  ) {
     return (
       <div className="container mx-auto py-10 max-w-6xl">
         <DashboardSkeleton />
+      </div>
+    );
+  }
+
+  // Security Check: If they somehow got a session but are NOT a partner
+  if (status === "authenticated" && session?.user?.role !== "partner") {
+    return (
+      <div className="container mx-auto py-20 text-center max-w-xl">
+        <ShieldAlert className="mx-auto h-16 w-16 text-destructive mb-4" />
+        <h2 className="text-2xl font-bold">Доступ запрещен</h2>
+        <p className="text-muted-foreground mt-2 mb-6">
+          Этот портал предназначен исключительно для партнеров. Вы вошли как{" "}
+          {session.user.role}.
+        </p>
+        <Button onClick={() => (window.location.href = mainAppUrl)}>
+          Вернуться на главную платформу
+        </Button>
       </div>
     );
   }
@@ -154,8 +219,7 @@ export default function PartnerDashboardPage() {
         <AlertCircle className="mx-auto h-12 w-12 text-destructive mb-4" />
         <h2 className="text-2xl font-bold">Ошибка загрузки</h2>
         <p className="text-muted-foreground mt-2">
-          Не удалось загрузить данные дашборда. Возможно, у вас нет прав
-          партнера.
+          Не удалось загрузить данные дашборда.
         </p>
       </div>
     );
@@ -171,6 +235,7 @@ export default function PartnerDashboardPage() {
     referralEvents,
     minPayout,
   } = dashboardData;
+
   const canRequestPayout = balance >= minPayout;
 
   return (
@@ -197,7 +262,7 @@ export default function PartnerDashboardPage() {
               id="referralLink"
               readOnly
               className="bg-white border-primary/20 font-mono text-sm"
-              value={`${process.env.NEXT_PUBLIC_CLIENT_STORE_URL || "https://eventomir.ru"}/register?ref=${referralId}`}
+              value={`${mainAppUrl}/register?ref=${referralId}`}
             />
           </div>
           <Button
@@ -282,7 +347,6 @@ export default function PartnerDashboardPage() {
               <CardTitle>Доход по месяцам</CardTitle>
             </CardHeader>
             <CardContent className="h-[350px]">
-              {/* Replaced ResponsiveContainer with Shadcn ChartContainer */}
               <ChartContainer config={chartConfig} className="h-full w-full">
                 <BarChart data={monthlyRevenue}>
                   <CartesianGrid vertical={false} strokeDasharray="3 3" />
