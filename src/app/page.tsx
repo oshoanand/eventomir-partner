@@ -131,8 +131,8 @@ export default async function PartnershipLandingPage() {
               icon={<Banknote className="h-8 w-8" />}
               title="Щедрые выплаты"
             >
-              Получайте конкурентоспособный процент от каждой первой оплаты
-              тарифа привлеченным вами исполнителем.
+              Получайте конкурентоспособный процент от каждой оплаты тарифа
+              привлеченным вами исполнителем.
             </AdvantageCard>
             <AdvantageCard
               icon={<Target className="h-8 w-8" />}
