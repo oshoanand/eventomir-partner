@@ -5,7 +5,7 @@ import * as SheetPrimitive from "@radix-ui/react-dialog"; // Sheet uses Dialog p
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react"; // Close icon // Иконка закрытия
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/helper";
 
 // Sheet root component (based on Dialog root) // Корневой компонент Sheet (на основе Dialog root)
 const Sheet = SheetPrimitive.Root;

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/helper";
 
 // Define the props interface for the Textarea component, extending standard HTML textarea attributes
 // Определяем интерфейс пропсов для компонента Textarea, расширяя стандартные атрибуты HTML textarea

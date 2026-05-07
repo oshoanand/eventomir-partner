@@ -1,123 +1,145 @@
+"use client";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest, ApiError } from "@/utils/api-client";
+import { apiRequest } from "@/utils/api-client";
 
-//  TYPES ---
-export interface ReferralEvent {
-  id: string;
-  createdAt: string | Date;
-  eventType: "registration" | "payment";
-  referredUserId: string;
-  commissionAmount?: number | null;
-  status: "pending" | "paid" | "rejected";
+// --- INTERFACES ---
+
+export interface SocialLinks {
+  vk?: string;
+  telegram?: string;
+  youtube?: string;
+  instagram?: string;
+  facebook?: string;
+  twitter?: string;
+  tiktok?: string;
+  website?: string;
 }
 
-export interface MonthlyRevenue {
-  name: string; // e.g., 'Янв', 'Фев'
-  total: number;
+export interface BankDetail {
+  kpp?: string;
+  bik?: string;
+  bankName?: string;
+  accountNumber?: string;
+  corrAccount?: string;
 }
 
-export interface PartnerDashboardData {
-  partnerId: string;
-  referralId: string;
-  balance: number;
-  totalEarned: number;
-  totalRegistrations: number;
-  totalPaidConversions: number;
-  clicks: number;
-  monthlyRevenue: MonthlyRevenue[];
-  referralEvents: ReferralEvent[];
-  minPayout: number;
-  paymentDetails: string | null;
-}
-
-export interface PartnershipFormValues {
+export interface PartnerProfileData {
   name: string;
   email: string;
-  website: string;
+  phone: string;
+  image: string | null;
+  companyName: string | null;
+  inn: string | null;
+  description: string | null;
+  city: string | null;
+  address: string | null;
+  accountType: string | null;
+  referralId: string;
+  socialLinks: SocialLinks;
+  bankDetails: BankDetail[];
 }
 
-//  RAW API FUNCTIONS ---
+// DTO (Data Transfer Object) for updating the profile.
+// Omits read-only fields (like email and referralId) and adds file upload support.
+export type UpdatePartnerProfileParams = Partial<
+  Omit<PartnerProfileData, "email" | "referralId" | "accountType" | "image">
+> & {
+  profilePictureFile?: File | null;
+};
 
-export const getPartnerDashboardData = async (
+// --- API FUNCTIONS (Internal/Private) ---
+
+/**
+ * Fetches the complete profile data for a partner.
+ */
+const fetchPartnerProfileFn = async (
   userId: string,
-): Promise<PartnerDashboardData> => {
-  return apiRequest<PartnerDashboardData>({
+): Promise<PartnerProfileData> => {
+  return await apiRequest<PartnerProfileData>({
     method: "get",
-    url: `/api/partners/${userId}/dashboard`,
+    url: `/api/partners/${userId}`,
   });
 };
 
-export const updatePartnerPaymentDetails = async (
-  userId: string,
-  paymentDetails: string,
-) => {
-  return apiRequest<{ message: string }>({
+/**
+ * Updates the partner profile.
+ * Automatically handles converting standard data, nested JSON objects,
+ * and physical files into a multipart/form-data payload.
+ */
+const updatePartnerProfileFn = async ({
+  userId,
+  data,
+}: {
+  userId: string;
+  data: UpdatePartnerProfileParams;
+}): Promise<{ message: string; profile: any }> => {
+  const formData = new FormData();
+
+  // 1. Append standard text fields (handling undefined gracefully)
+  if (data.name !== undefined) formData.append("name", data.name);
+  if (data.phone !== undefined) formData.append("phone", data.phone);
+  if (data.companyName !== undefined)
+    formData.append("companyName", data.companyName || "");
+  if (data.description !== undefined)
+    formData.append("description", data.description || "");
+  if (data.city !== undefined) formData.append("city", data.city || "");
+  if (data.address !== undefined)
+    formData.append("address", data.address || "");
+  if (data.inn !== undefined) formData.append("inn", data.inn || "");
+
+  // 2. Append nested objects by stringifying them so the backend can parse them safely
+  if (data.socialLinks) {
+    formData.append("socialLinks", JSON.stringify(data.socialLinks));
+  }
+
+  if (data.bankDetails) {
+    formData.append("bankDetails", JSON.stringify(data.bankDetails));
+  }
+
+  // 3. Append physical files if the user selected a new one
+  if (data.profilePictureFile) {
+    // "profilePicture" MUST match the field name in your backend multer.fields() configuration
+    formData.append("profilePicture", data.profilePictureFile);
+  }
+
+  return await apiRequest<{ message: string; profile: any }>({
     method: "patch",
-    url: `/api/partners/${userId}/payment-details`,
-    data: { paymentDetails },
+    url: `/api/partners/${userId}`,
+    data: formData,
+    // Setting Content-Type to undefined forces the browser to automatically set the
+    // multipart/form-data header along with the required unique boundary string.
+    headers: { "Content-Type": undefined },
   });
 };
 
-export const requestPayout = async (userId: string) => {
-  return apiRequest<{ message: string; data: any }>({
-    method: "post",
-    url: `/api/partners/${userId}/payouts`,
-  });
-};
+// --- REACT QUERY HOOKS (Public) ---
 
-// REACT QUERY HOOKS ---
-
-// Hook to fetch dashboard data
-export const usePartnerDashboard = (userId?: string) => {
+/**
+ * Hook to fetch and cache the partner's profile.
+ */
+export const usePartnerProfile = (userId: string | null | undefined) => {
   return useQuery({
-    queryKey: ["partnerDashboard", userId],
-    queryFn: () => getPartnerDashboardData(userId!),
-    enabled: !!userId, // Only run the query if userId exists (e.g., user is logged in)
-    staleTime: 1000 * 60 * 5, // Cache the data for 5 minutes to prevent spamming the backend
+    queryKey: ["partnerProfile", userId],
+    queryFn: () => fetchPartnerProfileFn(userId!),
+    enabled: !!userId, // Only run the query if a valid userId is provided
+    staleTime: 1000 * 60 * 5, // Cache the data for 5 minutes
   });
 };
 
-// Hook to update payment details
-export const useUpdatePaymentDetails = () => {
+/**
+ * Hook to update the partner's profile with automatic query invalidation.
+ */
+export const useUpdatePartnerProfile = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      partnerId,
-      paymentDetails,
-    }: {
-      partnerId: string;
-      paymentDetails: string;
-    }) => updatePartnerPaymentDetails(partnerId, paymentDetails),
-    onSuccess: (_, variables) => {
-      // Instantly refresh the dashboard data after a successful update
+    mutationFn: updatePartnerProfileFn,
+    onSuccess: (response, variables) => {
+      // Invalidate the query so the UI fetches the fresh data immediately
       queryClient.invalidateQueries({
-        queryKey: ["partnerDashboard", variables.partnerId],
+        queryKey: ["partnerProfile", variables.userId],
       });
     },
-  });
-};
-
-// Hook to request a payout
-export const useRequestPayout = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (userId: string) => requestPayout(userId),
-    onSuccess: (_, userId) => {
-      // Instantly refresh the dashboard data so the balance goes down to 0 in the UI
-      queryClient.invalidateQueries({ queryKey: ["partnerDashboard", userId] });
-    },
-  });
-};
-
-export const useSubmitPartnership = () => {
-  return useMutation<{ message: string }, ApiError, PartnershipFormValues>({
-    mutationFn: (data) =>
-      apiRequest({
-        method: "post",
-        url: "/api/partners/partnership-request",
-        data,
-      }),
   });
 };

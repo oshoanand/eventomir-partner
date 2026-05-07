@@ -1,16 +1,10 @@
 "use client";
-
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { signOut } from "next-auth/react";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,275 +14,311 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Menu,
+  ChevronDown,
   User,
   LogOut,
+  Settings,
   LayoutDashboard,
+  X,
   LogIn,
-  ArrowRight,
-  Bell,
 } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
-import React, { useState, useEffect } from "react";
 
 interface ClientMenuProps {
   isLoggedIn: boolean;
-  unreadCount: number;
-  userRole: "partner" | "performer" | null;
+  userRole: "customer" | "performer" | "partner" | null;
   userImage?: string | null;
-  onOpenChange?: (open: boolean) => void;
-  className?: string;
+  userName: string;
+  useTransparentStyle: boolean; // 🚨 FIXED: Changed from 'scrolled' to 'useTransparentStyle'
 }
 
 const ClientMenu: React.FC<ClientMenuProps> = ({
   isLoggedIn,
   userRole,
   userImage,
-  onOpenChange,
-  unreadCount,
+  userName,
+  useTransparentStyle, // 🚨 FIXED
 }) => {
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // --- Logic: Determine Profile Link based on Role ---
-  const getProfileLink = () => {
-    switch (userRole) {
-      case "partner":
-        return "/dashboard";
-      default:
-        return "/";
-    }
-  };
-
-  const profileHref = getProfileLink();
-
-  // --- Logic: Handle Logout ---
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/" });
-  };
-
-  const menuLinks = [{ href: "/about", label: "О нас", alwaysVisible: true }];
-
-  const closeMenu = () => setIsMenuOpen(false);
+  useEffect(() => setIsClient(true), []);
 
   if (!isClient) return null;
 
-  const filteredLinks = menuLinks.filter((link) => link.alwaysVisible);
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/login" });
+    setIsMenuOpen(false);
+  };
 
-  const ProfileDropdown = () => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
-          <Avatar className="h-9 w-9 transition-opacity hover:opacity-80 border border-border">
-            <AvatarImage
-              src={userImage || ""}
-              alt="Profile"
-              className="object-cover"
-            />
-            <AvatarFallback className="bg-primary/10 text-primary">
-              <User className="h-4 w-4" />
-            </AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Мой аккаунт</p>
-            <p className="text-xs leading-none text-muted-foreground capitalize">
-              {userRole === "partner" ? "Партнер" : userRole}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+  const profileLink =
+    userRole === "partner"
+      ? { href: "/profile", label: "Настройки профиля" }
+      : { href: "/complete-registration", label: "Завершить регистрацию" };
 
-        <DropdownMenuItem asChild>
-          <Link
-            href={profileHref}
-            onClick={closeMenu}
-            className="cursor-pointer"
-          >
-            <LayoutDashboard className="mr-2 h-4 w-4" />
-            <span>Личный кабинет</span>
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuSeparator />
-
-        <DropdownMenuItem
-          onClick={handleLogout}
-          className="text-red-600 focus:text-red-600 cursor-pointer"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Выйти</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-
-  // --- MOBILE VIEW ---
+  // ==========================================
+  // MOBILE MENU (Framer Motion Drawer)
+  // ==========================================
   if (isMobile) {
     return (
-      <Sheet
-        open={isMenuOpen}
-        onOpenChange={(open) => {
-          setIsMenuOpen(open);
-          if (onOpenChange) onOpenChange(open);
-        }}
-      >
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon">
-            <Menu className="h-5 w-5" />
-          </Button>
-        </SheetTrigger>
+      <>
+        <button
+          onClick={() => setIsMenuOpen(true)}
+          className={`relative flex items-center justify-center h-10 w-10 rounded-full transition-all hover:scale-105 active:scale-95 ${
+            useTransparentStyle
+              ? "bg-white/10 hover:bg-white/20 text-white"
+              : "bg-primary/10 hover:bg-primary/20 text-primary"
+          }`}
+        >
+          <Menu className="w-5 h-5" />
+        </button>
 
-        <SheetContent side="left" className="w-3/4 bg-secondary flex flex-col">
-          <SheetHeader>
-            <SheetTitle>Меню</SheetTitle>
-            <SheetDescription>Навигация по сайту.</SheetDescription>
-          </SheetHeader>
+        <AnimatePresence>
+          {isMenuOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsMenuOpen(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+              />
 
-          <nav className="grid gap-4 py-4 flex-1">
-            {filteredLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="block px-2 py-1 text-lg rounded hover:bg-accent hover:text-accent-foreground"
-                onClick={closeMenu}
+              {/* Sidebar */}
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed top-0 right-0 h-[100dvh] w-[85vw] max-w-sm bg-background shadow-2xl z-[110] flex flex-col"
               >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Action Buttons at the bottom of mobile menu */}
-          <div className="border-t pt-4 px-2 pb-4">
-            {!isLoggedIn ? (
-              <div className="flex flex-col gap-3">
-                <Button
-                  variant="outline"
-                  asChild
-                  className="w-full justify-start"
-                  onClick={closeMenu}
-                >
-                  <Link href="/login">
-                    <LogIn className="mr-2 h-4 w-4" /> Войти
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  className="w-full justify-start"
-                  onClick={closeMenu}
-                >
-                  <Link href="/#register-form">Стать партнером</Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {userRole === "partner" && (
-                  <Button
-                    asChild
-                    className="w-full justify-start"
-                    onClick={closeMenu}
-                  >
-                    <Link href="/dashboard">
-                      Личный кабинет <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                )}
-                {isLoggedIn && (
-                  <Link href="/notifications">
-                    <Button variant="ghost" size="icon" className="relative">
-                      <Bell className="h-5 w-5" />
-                      {unreadCount > 0 && (
-                        <Badge
-                          variant="destructive"
-                          className="absolute -top-1 -right-1 h-4 w-4 min-w-[16px] p-0 flex items-center justify-center rounded-full text-[10px]"
-                        >
-                          {unreadCount > 9 ? "9+" : unreadCount}
-                        </Badge>
-                      )}
-                      <span className="sr-only">Уведомления</span>
-                    </Button>
-                  </Link>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Профиль
+                <div className="flex items-center justify-between p-4 border-b border-border/50">
+                  <span className="font-bold text-lg text-foreground">
+                    Меню
                   </span>
-                  <ProfileDropdown />
+                  <button
+                    onClick={() => setIsMenuOpen(false)}
+                    className="p-2 bg-muted rounded-full text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-              </div>
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
+
+                <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+                  {!isLoggedIn ? (
+                    <div className="flex flex-col gap-3 mt-4">
+                      <p className="text-sm text-muted-foreground text-center mb-2">
+                        Войдите, чтобы получить доступ к панели партнера
+                      </p>
+                      <Link href="/login" onClick={() => setIsMenuOpen(false)}>
+                        <Button className="w-full font-bold h-12 rounded-xl text-md gap-2">
+                          <LogIn className="w-5 h-5" /> Войти в аккаунт
+                        </Button>
+                      </Link>
+                      <Link
+                        href="/register"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Button
+                          variant="outline"
+                          className="w-full font-bold h-12 rounded-xl text-md"
+                        >
+                          Стать партнером
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <>
+                      {/* User Info Block */}
+                      <div className="flex items-center gap-3 p-3 mb-4 bg-muted/30 rounded-2xl border border-border/50">
+                        <div className="h-12 w-12 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                          {userImage ? (
+                            <Image
+                              src={userImage}
+                              alt="User"
+                              width={64}
+                              height={64}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <User className="h-6 w-6 text-primary" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-base truncate">
+                            {userName || "Пользователь"}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {userRole === "partner"
+                              ? "Партнер"
+                              : "Требует активации"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Navigation Links */}
+                      <div className="space-y-1">
+                        {userRole === "partner" && (
+                          <Link
+                            href="/dashboard"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted font-medium text-foreground transition-colors"
+                          >
+                            <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                              <LayoutDashboard className="w-5 h-5" />
+                            </div>
+                            Кабинет партнера
+                          </Link>
+                        )}
+                        <Link
+                          href={profileLink.href}
+                          onClick={() => setIsMenuOpen(false)}
+                          className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted font-medium text-foreground transition-colors"
+                        >
+                          <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                            <Settings className="w-5 h-5" />
+                          </div>
+                          {profileLink.label}
+                        </Link>
+                      </div>
+
+                      <div className="mt-auto pt-6">
+                        <Button
+                          variant="destructive"
+                          className="w-full h-12 rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 shadow-none border-0"
+                          onClick={handleLogout}
+                        >
+                          <LogOut className="w-5 h-5 mr-2" /> Выйти из аккаунта
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </>
     );
   }
 
-  // --- DESKTOP VIEW ---
+  // ==========================================
+  // DESKTOP MENU
+  // ==========================================
   return (
-    <nav className="flex items-center gap-6">
-      {filteredLinks.map((link) => (
-        <Link
-          key={link.href}
-          href={link.href}
-          className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-        >
-          {link.label}
-        </Link>
-      ))}
+    <nav className="flex items-center gap-4">
+      {!isLoggedIn ? (
+        <div className="flex items-center gap-3">
+          <Link href="/login">
+            <Button
+              variant="ghost"
+              className={`font-semibold rounded-full ${
+                useTransparentStyle
+                  ? "hover:bg-white/10 hover:text-white text-white"
+                  : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+              }`}
+            >
+              Войти
+            </Button>
+          </Link>
+          <Link href="/register">
+            <Button className="font-bold rounded-full transition-all hover:-translate-y-0.5">
+              Стать партнером
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className={`h-11 gap-2 pl-2 pr-4 rounded-full border-transparent transition-colors focus-visible:ring-0 ${
+                useTransparentStyle
+                  ? "bg-white/10 hover:bg-white/20 hover:text-white"
+                  : "bg-primary/10 hover:bg-primary/20 hover:text-primary"
+              }`}
+            >
+              <div className="h-8 w-8 rounded-full overflow-hidden bg-primary/20 flex items-center justify-center shrink-0">
+                {userImage ? (
+                  <Image
+                    src={userImage}
+                    alt="profile"
+                    width={32}
+                    height={32}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <User
+                    className={`h-4 w-4 ${
+                      useTransparentStyle ? "text-white" : "text-primary"
+                    }`}
+                  />
+                )}
+              </div>
+              <span
+                className={`max-w-[120px] truncate font-medium text-sm ${
+                  useTransparentStyle
+                    ? "hover:text-white"
+                    : "hover:text-primary"
+                }`}
+              >
+                {userName?.split(" ")[0] || "Профиль"}
+              </span>
+              <ChevronDown className="h-4 w-4 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
 
-      <div className="ml-2 flex items-center gap-4">
-        {!isLoggedIn ? (
-          <>
-            <Button variant="outline" asChild>
-              <Link href="/login">
-                <LogIn className="mr-2 h-4 w-4" /> Войти
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href="/#register-form">Стать партнером</Link>
-            </Button>
-          </>
-        ) : (
-          <>
+          <DropdownMenuContent
+            align="end"
+            className="w-60 p-2 rounded-2xl shadow-xl mt-2 border-border/50"
+          >
+            <DropdownMenuLabel className="px-3 pb-2 pt-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Управление
+            </DropdownMenuLabel>
+
             {userRole === "partner" && (
-              <Button asChild>
+              <DropdownMenuItem
+                asChild
+                className="cursor-pointer p-2 rounded-xl focus:bg-muted font-medium "
+              >
                 <Link href="/dashboard">
-                  Личный кабинет <ArrowRight className="ml-2 h-4 w-4" />
+                  <div className="p-1.5 bg-primary/10 rounded-md mr-3">
+                    <LayoutDashboard className="h-4 w-4 text-primary" />
+                  </div>
+                  Дашборд
                 </Link>
-              </Button>
+              </DropdownMenuItem>
             )}
-            {isLoggedIn && (
-              <Link href="/notifications">
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5" />
-                  {unreadCount > 0 && (
-                    <Badge
-                      variant="destructive"
-                      className="absolute -top-1 -right-1 h-4 w-4 min-w-[16px] p-0 flex items-center justify-center rounded-full text-[10px]"
-                    >
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </Badge>
-                  )}
-                  <span className="sr-only">Уведомления</span>
-                </Button>
+
+            <DropdownMenuItem
+              asChild
+              className="cursor-pointer p-2 rounded-xl focus:bg-muted font-medium"
+            >
+              <Link href={profileLink.href}>
+                <div className="p-1.5 bg-primary/10 rounded-md mr-3">
+                  <Settings className="h-4 w-4 text-primary" />
+                </div>
+                Настройки профиля
               </Link>
-            )}
-            <ProfileDropdown />
-          </>
-        )}
-      </div>
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="my-2" />
+
+            <DropdownMenuItem
+              className="cursor-pointer p-3 rounded-xl focus:bg-red-500/10 focus:text-red-600 text-red-500 font-medium transition-colors"
+              onClick={handleLogout}
+            >
+              <div className="p-1.5 bg-red-500/10 rounded-md mr-3">
+                <LogOut className="h-4 w-4" />
+              </div>
+              Выйти
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </nav>
   );
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
 import {
@@ -43,171 +43,89 @@ import {
   ShieldAlert,
 } from "lucide-react";
 
-import {
-  usePartnerDashboard,
-  useUpdatePaymentDetails,
-  useRequestPayout,
-} from "@/services/partner";
+// ONLY import Dashboard related services
+import { usePartnerDashboard, useRequestPayout } from "@/services/dashboard";
 
 const DashboardSkeleton = () => (
   <div className="space-y-6">
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
+      <Skeleton className="h-28 rounded-xl" />
+      <Skeleton className="h-28 rounded-xl" />
+      <Skeleton className="h-28 rounded-xl" />
+      <Skeleton className="h-28 rounded-xl" />
     </div>
-    <Skeleton className="h-80" />
-    <Skeleton className="h-40" />
+    <Skeleton className="h-80 rounded-xl" />
   </div>
 );
-
-const chartConfig = {
-  total: {
-    label: "Доход (₽)",
-    color: "hsl(var(--primary))",
-  },
-};
 
 export default function PartnerDashboardPage() {
   const { data: session, status } = useSession();
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const router = useRouter();
-
   const token = searchParams.get("v");
   const hasAttemptedTransfer = useRef(false);
 
-  // Environment variables
   const mainAppUrl =
-    process.env.NEXT_PUBLIC_WEB_APP_URL || "http://localhost:3000";
+    process.env.NEXT_PUBLIC_WEB_APP_URL || "https://app.eventomir.ru";
+  const userId = session?.user?.id;
 
-  // --- 1. AUTHENTICATION & TRANSFER LOGIC ---
+  // --- Auth & Transfer Logic ---
   useEffect(() => {
-    // If the user arrived with a transfer token, log them in silently
     if (token && !hasAttemptedTransfer.current) {
       hasAttemptedTransfer.current = true;
-      signIn("credentials", {
-        transferToken: token,
-        redirect: false,
-      }).then((res) => {
-        if (res?.ok) {
-          // Clean the URL so the token isn't sitting in the address bar
-          router.replace("/dashboard");
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Ошибка",
-            description: "Срок действия ссылки истек. Авторизуйтесь заново.",
-          });
-          window.location.href = `${mainAppUrl}/login`;
-        }
-      });
+      signIn("credentials", { transferToken: token, redirect: false }).then(
+        (res) => {
+          if (res?.ok) router.replace("/dashboard");
+          else {
+            toast({
+              variant: "destructive",
+              title: "Ошибка",
+              description: "Срок действия ссылки истек.",
+            });
+            window.location.href = `${mainAppUrl}/login`;
+          }
+        },
+      );
     } else if (status === "unauthenticated" && !token) {
-      // If not logged in and no token is present, bounce them back to the main app
       window.location.href = `${mainAppUrl}/login`;
     }
   }, [token, status, router, mainAppUrl, toast]);
 
-  // --- 2. DATA FETCHING ---
-  const userId = session?.user?.id;
-
-  // Prevent React Query from running until we have a verified user session
   const isReadyToFetch =
     status === "authenticated" && !!userId && session?.user?.role === "partner";
 
+  // --- Data Hooks ---
   const {
     data: dashboardData,
     isLoading,
     error,
   } = usePartnerDashboard(isReadyToFetch ? userId : undefined);
-
-  const updatePaymentMutation = useUpdatePaymentDetails();
   const requestPayoutMutation = useRequestPayout();
 
-  const [paymentDetails, setPaymentDetails] = useState("");
-
-  useEffect(() => {
-    if (dashboardData?.paymentDetails) {
-      setPaymentDetails(dashboardData.paymentDetails);
-    }
-  }, [dashboardData?.paymentDetails]);
-
-  // --- HANDLERS ---
-  const handleCopyToClipboard = () => {
-    if (!dashboardData) return;
-    const referralLink = `${mainAppUrl}/register?ref=${dashboardData.referralId}`;
-    navigator.clipboard.writeText(referralLink);
-    toast({
-      title: "Скопировано!",
-      description: "Реферальная ссылка скопирована в буфер обмена.",
-    });
-  };
-
-  const handleSavePaymentDetails = () => {
-    if (!userId) return;
-    updatePaymentMutation.mutate(
-      { partnerId: userId, paymentDetails },
-      {
-        onSuccess: () =>
-          toast({
-            title: "Сохранено",
-            description: "Ваши платежные реквизиты обновлены.",
-          }),
-        onError: (err: any) =>
-          toast({
-            variant: "destructive",
-            title: "Ошибка",
-            description: err.message,
-          }),
-      },
-    );
-  };
-
-  const handleRequestPayout = () => {
-    if (!userId) return;
-    requestPayoutMutation.mutate(userId, {
-      onSuccess: () =>
-        toast({
-          title: "Запрос отправлен",
-          description: "Ваш запрос на выплату передан в обработку.",
-        }),
-      onError: (err: any) =>
-        toast({
-          variant: "destructive",
-          title: "Ошибка",
-          description: err.message,
-        }),
-    });
-  };
-
-  // --- RENDER STATES ---
-
-  // Show skeleton if NextAuth is still checking session, or if we are actively logging in via token
   if (
     status === "loading" ||
     (token && !hasAttemptedTransfer.current) ||
     isLoading
   ) {
     return (
-      <div className="container mx-auto py-10 max-w-6xl">
+      // Added pt-28 to clear the fixed header
+      <div className="container mx-auto pt-28 pb-10 max-w-6xl">
         <DashboardSkeleton />
       </div>
     );
   }
 
-  // Security Check: If they somehow got a session but are NOT a partner
   if (status === "authenticated" && session?.user?.role !== "partner") {
     return (
-      <div className="container mx-auto py-20 text-center max-w-xl">
+      <div className="container mx-auto pt-32 pb-20 text-center max-w-xl">
         <ShieldAlert className="mx-auto h-16 w-16 text-destructive mb-4" />
         <h2 className="text-2xl font-bold">Доступ запрещен</h2>
-        <p className="text-muted-foreground mt-2 mb-6">
-          Этот портал предназначен исключительно для партнеров. Вы вошли как{" "}
-          {session.user.role}.
-        </p>
-        <Button onClick={() => (window.location.href = mainAppUrl)}>
-          Вернуться на главную платформу
+        <Button
+          className="mt-6"
+          onClick={() => (window.location.href = mainAppUrl)}
+        >
+          Вернуться
         </Button>
       </div>
     );
@@ -215,12 +133,9 @@ export default function PartnerDashboardPage() {
 
   if (error || !dashboardData) {
     return (
-      <div className="container mx-auto py-20 text-center max-w-xl">
+      <div className="container mx-auto pt-32 pb-20 text-center max-w-xl">
         <AlertCircle className="mx-auto h-12 w-12 text-destructive mb-4" />
-        <h2 className="text-2xl font-bold">Ошибка загрузки</h2>
-        <p className="text-muted-foreground mt-2">
-          Не удалось загрузить данные дашборда.
-        </p>
+        <h2 className="text-2xl font-bold">Ошибка загрузки данных</h2>
       </div>
     );
   }
@@ -234,120 +149,134 @@ export default function PartnerDashboardPage() {
     monthlyRevenue,
     referralEvents,
     minPayout,
+    paymentDetails,
   } = dashboardData;
-
   const canRequestPayout = balance >= minPayout;
 
+  const handleCopyToClipboard = () => {
+    if (!dashboardData) return;
+    const referralLink = `${mainAppUrl}/register-performer?ref=${referralId}`;
+    navigator.clipboard.writeText(referralLink);
+    toast({
+      title: "Скопировано!",
+      description: "Реферальная ссылка скопирована в буфер обмена.",
+    });
+  };
+
   return (
-    <div className="container mx-auto py-10 space-y-8 max-w-6xl animate-in fade-in duration-500">
-      {/* Header Area */}
+    <div className="container mx-auto pt-24 pb-12 md:pt-32 md:pb-20 space-y-8 max-w-6xl animate-in fade-in duration-500">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Кабинет партнера</h1>
-        <p className="text-muted-foreground mt-1">
-          Отслеживайте вашу статистику и управляйте финансами.
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
+          Кабинет партнера
+        </h1>
+        <p className="text-muted-foreground mt-2 text-lg">
+          Отслеживайте статистику и управляйте финансами.
         </p>
       </div>
 
-      {/* Referral Link Area */}
-      <Card className="border-primary/20 bg-primary/5 shadow-none">
-        <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-6 rounded-lg">
+      {/* Referral Link Card */}
+      <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-white shadow-sm overflow-hidden">
+        <CardContent className="flex flex-col sm:flex-row items-start sm:items-end gap-4 p-6 md:p-8">
           <div className="flex-grow w-full">
             <Label
               htmlFor="referralLink"
-              className="text-primary font-semibold mb-2 block"
+              className="text-emerald-800 font-bold mb-2 block text-sm uppercase tracking-wider"
             >
               Ваша уникальная реферальная ссылка
             </Label>
             <Input
               id="referralLink"
               readOnly
-              className="bg-white border-primary/20 font-mono text-sm"
-              value={`${mainAppUrl}/register?ref=${referralId}`}
+              className="bg-white border-emerald-200 font-mono text-base py-6 shadow-sm focus-visible:ring-emerald-500"
+              value={`${mainAppUrl}/register-performer?ref=${referralId}`}
             />
           </div>
           <Button
+            size="lg"
             onClick={handleCopyToClipboard}
-            className="mt-2 sm:mt-7 shrink-0 shadow-sm"
+            className="w-full sm:w-auto mt-2 sm:mt-0 shrink-0 shadow-md bg-emerald-600 hover:bg-emerald-700 text-white transition-all hover:scale-105"
           >
-            <Copy className="mr-2 h-4 w-4" /> Скопировать
+            <Copy className="mr-2 h-5 w-5" /> Скопировать
           </Button>
         </CardContent>
       </Card>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-3">
-          <TabsTrigger value="overview">Обзор</TabsTrigger>
-          <TabsTrigger value="events">События</TabsTrigger>
-          <TabsTrigger value="payouts">Выплаты</TabsTrigger>
+        <TabsList className="grid w-full max-w-md grid-cols-3 mb-8 p-1 bg-slate-100 rounded-xl">
+          <TabsTrigger value="overview" className="rounded-lg">
+            Обзор
+          </TabsTrigger>
+          <TabsTrigger value="events" className="rounded-lg">
+            События
+          </TabsTrigger>
+          <TabsTrigger value="payouts" className="rounded-lg">
+            Выплаты
+          </TabsTrigger>
         </TabsList>
 
-        {/* 1. OVERVIEW TAB */}
-        <TabsContent value="overview" className="mt-6 space-y-6">
+        {/* OVERVIEW TAB */}
+        <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Текущий баланс
+            <Card className="shadow-sm border-slate-200 hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-500 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-emerald-500" /> Баланс
                 </CardTitle>
-                <DollarSign className="h-4 w-4 text-emerald-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-emerald-600">
+                <div className="text-3xl font-black text-emerald-600">
                   {balance.toLocaleString("ru-RU")} ₽
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Готово к выплате
-                </p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Всего заработано
+            <Card className="shadow-sm border-slate-200 hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-500 flex items-center gap-2">
+                  <Handshake className="w-4 h-4 text-blue-500" /> Заработано
                 </CardTitle>
-                <Handshake className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-3xl font-bold text-slate-900">
                   {totalEarned.toLocaleString("ru-RU")} ₽
                 </div>
-                <p className="text-xs text-muted-foreground">За все время</p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Регистраций
+            <Card className="shadow-sm border-slate-200 hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-500 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-purple-500" /> Регистраций
                 </CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">+{totalRegistrations}</div>
-                <p className="text-xs text-muted-foreground">
-                  Привлечено исполнителей
-                </p>
+                <div className="text-3xl font-bold text-slate-900">
+                  +{totalRegistrations}
+                </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Переходов</CardTitle>
-                <Eye className="h-4 w-4 text-muted-foreground" />
+            <Card className="shadow-sm border-slate-200 hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-500 flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-orange-500" /> Переходов
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{clicks}</div>
-                <p className="text-xs text-muted-foreground">
-                  По реферальной ссылке
-                </p>
+                <div className="text-3xl font-bold text-slate-900">
+                  {clicks}
+                </div>
               </CardContent>
             </Card>
           </div>
-
-          <Card>
+          <Card className="shadow-sm border-slate-200">
             <CardHeader>
               <CardTitle>Доход по месяцам</CardTitle>
             </CardHeader>
             <CardContent className="h-[350px]">
-              <ChartContainer config={chartConfig} className="h-full w-full">
+              <ChartContainer
+                config={{
+                  total: { label: "Доход (₽)", color: "hsl(var(--primary))" },
+                }}
+                className="h-full w-full"
+              >
                 <BarChart data={monthlyRevenue}>
                   <CartesianGrid vertical={false} strokeDasharray="3 3" />
                   <XAxis
@@ -380,81 +309,76 @@ export default function PartnerDashboardPage() {
           </Card>
         </TabsContent>
 
-        {/* 2. EVENTS TAB */}
+        {/* EVENTS TAB */}
         <TabsContent value="events" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Реферальные события</CardTitle>
-              <CardDescription>
-                Список всех регистраций и оплат по вашей ссылке.
-              </CardDescription>
+          <Card className="shadow-sm border-slate-200 overflow-hidden">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <CardTitle>События</CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[400px] w-full rounded-md border">
+            <CardContent className="p-0">
+              <ScrollArea className="h-[500px] w-full">
                 <Table>
-                  <TableHeader className="bg-slate-50 sticky top-0 z-10">
+                  <TableHeader className="bg-slate-100 sticky top-0 z-10 shadow-sm">
                     <TableRow>
-                      <TableHead>Дата</TableHead>
-                      <TableHead>Событие</TableHead>
-                      <TableHead>Пользователь</TableHead>
-                      <TableHead className="text-right">
-                        Вознаграждение
+                      <TableHead className="font-bold">Дата</TableHead>
+                      <TableHead className="font-bold">Событие</TableHead>
+                      <TableHead className="font-bold">Пользователь</TableHead>
+                      <TableHead className="text-right font-bold">
+                        Сумма
                       </TableHead>
-                      <TableHead>Статус</TableHead>
+                      <TableHead className="font-bold text-center">
+                        Статус
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {referralEvents && referralEvents.length > 0 ? (
-                      referralEvents.map((event: any) => (
-                        <TableRow key={event.id}>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {new Date(event.createdAt).toLocaleDateString(
-                              "ru-RU",
-                            )}
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {event.eventType === "registration"
-                              ? "Регистрация"
-                              : "Оплата тарифа"}
-                          </TableCell>
-                          <TableCell className="font-mono text-xs">
-                            {event.referredUserId.substring(0, 8)}***
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
-                            {event.commissionAmount ? (
-                              <span className="text-emerald-600">
-                                +{event.commissionAmount} ₽
-                              </span>
-                            ) : (
-                              "-"
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {event.status === "pending" && (
-                              <span className="text-yellow-600 bg-yellow-50 px-2 py-1 rounded text-xs">
-                                В ожидании
-                              </span>
-                            )}
-                            {event.status === "paid" && (
-                              <span className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-xs">
-                                Начислено
-                              </span>
-                            )}
-                            {event.status === "rejected" && (
-                              <span className="text-red-600 bg-red-50 px-2 py-1 rounded text-xs">
-                                Отклонено
-                              </span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
+                    {referralEvents?.map((event: any) => (
+                      <TableRow
+                        key={event.id}
+                        className="hover:bg-slate-50 transition-colors"
+                      >
+                        <TableCell className="text-muted-foreground text-sm">
+                          {new Date(event.createdAt).toLocaleDateString(
+                            "ru-RU",
+                          )}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {event.eventType === "registration"
+                            ? "Регистрация"
+                            : "Оплата"}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-slate-500">
+                          {event.referredUserId.substring(0, 8)}***
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                          {event.commissionAmount ? (
+                            <span className="text-emerald-600">
+                              +{event.commissionAmount} ₽
+                            </span>
+                          ) : (
+                            <span className="text-slate-300">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {event.status === "paid" ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                              Оплачено
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                              Ожидание
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {(!referralEvents || referralEvents.length === 0) && (
                       <TableRow>
                         <TableCell
                           colSpan={5}
-                          className="h-32 text-center text-muted-foreground"
+                          className="h-48 text-center text-muted-foreground"
                         >
-                          Событий пока нет.
+                          Событий пока нет. Приглашайте пользователей!
                         </TableCell>
                       </TableRow>
                     )}
@@ -465,96 +389,68 @@ export default function PartnerDashboardPage() {
           </Card>
         </TabsContent>
 
-        {/* 3. PAYOUTS TAB */}
+        {/* PAYOUTS TAB */}
         <TabsContent value="payouts" className="mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Запрос выплаты</CardTitle>
-                <CardDescription>
-                  Минимальная сумма: {minPayout.toLocaleString("ru-RU")} ₽.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-4xl font-bold">
-                  {balance.toLocaleString("ru-RU")} ₽
+          <Card className="max-w-xl shadow-sm border-slate-200">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <CardTitle>Запрос выплаты</CardTitle>
+              <CardDescription>
+                Минимальная сумма: {minPayout.toLocaleString("ru-RU")} ₽.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+              <div>
+                <p className="text-sm font-medium text-slate-500 mb-1">
+                  Доступно к выводу
+                </p>
+                <div className="text-5xl font-black text-slate-900 tracking-tight">
+                  {balance.toLocaleString("ru-RU")}{" "}
+                  <span className="text-3xl text-slate-400 font-bold">₽</span>
                 </div>
-                <p className="text-muted-foreground">Текущий баланс</p>
+              </div>
 
-                {!canRequestPayout && (
-                  <div className="flex items-start gap-2 text-sm text-amber-700 p-3 bg-amber-50 border border-amber-200 rounded-md">
-                    <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <span>
-                      Для вывода средств необходимо накопить еще{" "}
-                      {(minPayout - balance).toLocaleString("ru-RU")} ₽.
-                    </span>
-                  </div>
+              {!canRequestPayout && (
+                <div className="flex items-start gap-3 text-sm text-amber-800 bg-amber-50 p-4 rounded-xl border border-amber-200">
+                  <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
+                  <p>
+                    Для вывода средств необходимо накопить еще{" "}
+                    <strong className="font-bold">
+                      {(minPayout - balance).toLocaleString("ru-RU")} ₽
+                    </strong>
+                    .
+                  </p>
+                </div>
+              )}
+              {canRequestPayout && !paymentDetails && (
+                <div className="flex items-start gap-3 text-sm text-red-800 bg-red-50 p-4 rounded-xl border border-red-200">
+                  <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
+                  <p>
+                    Укажите ваши банковские реквизиты в настройках профиля перед
+                    запросом выплаты.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="bg-slate-50/50 border-t p-6">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto font-bold shadow-md hover:shadow-lg transition-all"
+                onClick={() => requestPayoutMutation.mutate(userId!)}
+                disabled={
+                  !canRequestPayout ||
+                  !paymentDetails ||
+                  requestPayoutMutation.isPending
+                }
+              >
+                {requestPayoutMutation.isPending ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <DollarSign className="mr-2 h-5 w-5" />
                 )}
-                {canRequestPayout && !paymentDetails && (
-                  <div className="flex items-start gap-2 text-sm text-red-700 p-3 bg-red-50 border border-red-200 rounded-md">
-                    <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <span>Сначала заполните платежные реквизиты.</span>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter>
-                <Button
-                  onClick={handleRequestPayout}
-                  disabled={
-                    !canRequestPayout ||
-                    !paymentDetails ||
-                    requestPayoutMutation.isPending
-                  }
-                  className="w-full sm:w-auto"
-                >
-                  {requestPayoutMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
-                      Обработка...
-                    </>
-                  ) : (
-                    <>
-                      <DollarSign className="mr-2 h-4 w-4" /> Запросить выплату
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Платежные реквизиты</CardTitle>
-                <CardDescription>
-                  Куда переводить ваше вознаграждение.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Label htmlFor="paymentDetails" className="font-semibold">
-                  Ваши реквизиты (Карта / СБП / Р/С)
-                </Label>
-                <Input
-                  id="paymentDetails"
-                  className="mt-2"
-                  placeholder="Например, СБП: +7 (999) 123-45-67 (Сбербанк)"
-                  value={paymentDetails}
-                  onChange={(e) => setPaymentDetails(e.target.value)}
-                  disabled={updatePaymentMutation.isPending}
-                />
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="secondary"
-                  onClick={handleSavePaymentDetails}
-                  disabled={updatePaymentMutation.isPending || !paymentDetails}
-                >
-                  {updatePaymentMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : null}
-                  Сохранить реквизиты
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
+                Оформить заявку на вывод
+              </Button>
+            </CardFooter>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

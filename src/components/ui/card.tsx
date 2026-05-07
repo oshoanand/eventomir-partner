@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/helper";
 
 // Card component: The main container for card content
 // Компонент Card: Основной контейнер для содержимого карточки

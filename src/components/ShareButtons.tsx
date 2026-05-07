@@ -3,8 +3,8 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Send as SendIcon } from "@/components/icons";
-import { cn } from "@/lib/utils";
+import { Copy, Send as SendIcon } from "@/components/Icons";
+import { cn } from "@/utils/helper";
 
 // Inline SVGs for VK and Odnoklassniki as they are not in lucide-react
 // Inline SVG для VK и Одноклассников, так как их нет в lucide-react

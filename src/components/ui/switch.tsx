@@ -3,7 +3,7 @@
 import * as React from "react";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/helper";
 
 // Switch component definition, wraps Radix UI Switch
 // Определение компонента Switch, оборачивает Radix UI Switch

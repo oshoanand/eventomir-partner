@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/helper";
 
 // Skeleton component definition // Определение компонента Skeleton
 function Skeleton({

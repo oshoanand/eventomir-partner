@@ -1,182 +1,196 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import Link from "next/link";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { useSubmitPartnership } from "@/services/dashboard";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
-import { CheckCircle2, Loader2 } from "lucide-react";
-import { useSubmitPartnership } from "@/services/partner";
-
-const formSchema = z.object({
-  name: z.string().min(2, { message: "Имя обязательно для заполнения." }),
-  email: z.string().email({ message: "Введите корректный email." }),
-  website: z
-    .string()
-    .url({ message: "Введите корректную ссылку на ваш ресурс." }),
-  agreement: z.boolean().refine((val) => val === true, {
-    message: "Необходимо принять условия партнерской программы.",
-  }),
-});
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
 
 export default function PartnershipForm() {
   const { toast } = useToast();
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const submitMutation = useSubmitPartnership();
 
-  // React Query Mutation
-  const mutation = useSubmitPartnership();
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { name: "", email: "", website: "", agreement: false },
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    city: "",
+    website: "",
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // Exclude the 'agreement' boolean from the payload sent to backend
-    const { agreement, ...payload } = values;
+  const [isSuccess, setIsSuccess] = useState(false);
 
-    mutation.mutate(payload, {
-      onSuccess: (res) => {
-        toast({ title: "Заявка отправлена!", description: res.message });
-        setIsSubmitted(true);
+  // Phone Mask Logic: +7 (999) 999-99-99
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, ""); // Strip non-digits
+
+    // Auto-detect standard Russian prefixes
+    if (value.startsWith("7") || value.startsWith("8")) {
+      value = value.slice(1);
+    }
+
+    let formattedValue = "";
+    if (value.length > 0) formattedValue += "+7 ";
+    if (value.length > 0) formattedValue += "(" + value.substring(0, 3);
+    if (value.length >= 4) formattedValue += ") " + value.substring(3, 6);
+    if (value.length >= 7) formattedValue += "-" + value.substring(6, 8);
+    if (value.length >= 9) formattedValue += "-" + value.substring(8, 10);
+
+    setFormData({ ...formData, phone: formattedValue });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitMutation.mutate(formData, {
+      onSuccess: () => {
+        setIsSuccess(true);
       },
-      onError: (err: any) => {
+      onError: (error: any) => {
         toast({
           variant: "destructive",
           title: "Ошибка",
-          description: err.message,
+          description: error.message || "Не удалось отправить заявку.",
         });
       },
     });
   };
 
-  if (isSubmitted) {
+  if (isSuccess) {
     return (
-      <div className="flex flex-col items-center justify-center py-6 space-y-4 text-center animate-in fade-in">
-        <CheckCircle2 className="h-12 w-12 text-green-600" />
-        <p className="font-semibold text-xl">Спасибо за вашу заявку!</p>
+      <div className="text-center py-10 animate-in zoom-in duration-500">
+        <CheckCircle2 className="mx-auto h-16 w-16 text-emerald-500 mb-4" />
+        <h3 className="text-2xl font-bold mb-2">Заявка принята!</h3>
         <p className="text-muted-foreground">
-          На вашу почту отправлено письмо с подтверждением. Мы рассмотрим заявку
-          и свяжемся с вами в ближайшее время.
+          Спасибо за интерес. Наш менеджер свяжется с вами в ближайшее время по
+          указанным контактам.
         </p>
       </div>
     );
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Ваше имя или название компании</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Иван Петров"
-                  {...field}
-                  disabled={mutation.isPending}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Контактный Email</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder="partner@example.com"
-                  {...field}
-                  disabled={mutation.isPending}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="website"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Ваш ресурс</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="https://my-blog.com"
-                  {...field}
-                  disabled={mutation.isPending}
-                />
-              </FormControl>
-              <FormDescription>
-                Ссылка на ваш сайт, блог или соцсеть.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="agreement"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-white">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={mutation.isPending}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>
-                  Я согласен с{" "}
-                  <Link
-                    href="/documents/terms-of-service"
-                    className="underline hover:text-primary"
-                  >
-                    условиями
-                  </Link>{" "}
-                  партнерской программы.
-                </FormLabel>
-                <FormMessage />
-              </div>
-            </FormItem>
-          )}
-        />
-        <Button
-          type="submit"
-          className="w-full h-12 text-md"
-          disabled={mutation.isPending}
-        >
-          {mutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Отправка...
-            </>
-          ) : (
-            "Отправить заявку"
-          )}
-        </Button>
-      </form>
-    </Form>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="space-y-2">
+        <Label htmlFor="name">
+          Ваше имя / Название компании <span className="text-red-500">*</span>
+        </Label>
+        <div className="relative">
+          <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="name"
+            required
+            placeholder="Иван Иванов"
+            className="pl-10"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="email">
+          Email <span className="text-red-500">*</span>
+        </Label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="email"
+            type="email"
+            required
+            placeholder="ivan@example.com"
+            className="pl-10"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="space-y-2">
+          <Label htmlFor="phone">
+            Телефон <span className="text-red-500">*</span>
+          </Label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="phone"
+              type="tel"
+              required
+              placeholder="+7 (999) 000-00-00"
+              className="pl-10"
+              value={formData.phone}
+              onChange={handlePhoneChange}
+              maxLength={18} // Prevents typing infinitely past the mask
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="city">
+            Город <span className="text-red-500">*</span>
+          </Label>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="city"
+              required
+              placeholder="Москва"
+              className="pl-10"
+              value={formData.city}
+              onChange={(e) =>
+                setFormData({ ...formData, city: e.target.value })
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="website">
+          Сайт или соц. сеть{" "}
+          <span className="text-muted-foreground font-normal">
+            (необязательно)
+          </span>
+        </Label>
+        <div className="relative">
+          <Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="website"
+            placeholder="https://t.me/yourchannel"
+            className="pl-10"
+            value={formData.website}
+            onChange={(e) =>
+              setFormData({ ...formData, website: e.target.value })
+            }
+          />
+        </div>
+      </div>
+
+      <Button
+        type="submit"
+        className="w-full h-12 text-base mt-2"
+        disabled={submitMutation.isPending}
+      >
+        {submitMutation.isPending ? (
+          <>
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Отправка...
+          </>
+        ) : (
+          "Отправить заявку"
+        )}
+      </Button>
+    </form>
   );
 }

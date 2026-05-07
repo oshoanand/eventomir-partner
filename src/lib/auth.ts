@@ -1,183 +1,207 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/utils/prisma";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import YandexProvider from "next-auth/providers/yandex";
+import GoogleProvider from "next-auth/providers/google";
+import VkProvider from "next-auth/providers/vk";
+
+// Helper to decode JWTs natively
+function decodeJwt(token: string) {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join(""),
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    return null;
+  }
+}
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 Days
   },
   providers: [
+    YandexProvider({
+      clientId: process.env.YANDEX_CLIENT_ID as string,
+      clientSecret: process.env.YANDEX_CLIENT_SECRET as string,
+      allowDangerousEmailAccountLinking: true,
+    }),
+    VkProvider({
+      clientId: process.env.VK_CLIENT_ID as string,
+      clientSecret: process.env.VK_CLIENT_SECRET as string,
+      allowDangerousEmailAccountLinking: true,
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      allowDangerousEmailAccountLinking: true,
+    }),
+
     CredentialsProvider({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
-        transferToken: { label: "Transfer Token", type: "text" }, // Added to accept the SSO token
       },
 
       async authorize(credentials) {
         try {
-          const secret = process.env.NEXTAUTH_SECRET;
-          if (!secret) {
-            throw new Error("Ошибка конфигурации сервера");
-          }
-
-          // =================================================================
-          // SCENARIO 1: SEAMLESS LOGIN VIA TRANSFER TOKEN (SSO from Main App)
-          // =================================================================
-          if (credentials?.transferToken) {
-            try {
-              // 1. Verify the JWT signature
-              const decoded = jwt.verify(
-                credentials.transferToken,
-                secret,
-              ) as jwt.JwtPayload;
-
-              // 2. Fetch fresh user data from DB to ensure they still exist
-              const user = await prisma.user.findUnique({
-                where: { id: decoded.id },
-              });
-
-              if (!user) {
-                throw new Error("Пользователь не найден.");
-              }
-
-              // 3. STRICT ROLE CHECK: Only partners allowed
-              if (user.role !== "partner") {
-                throw new Error(
-                  "Доступ запрещен. Этот портал только для партнеров.",
-                );
-              }
-
-              // 4. Success! Return user to establish session
-              return {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                role: user.role,
-                accessToken: credentials.transferToken, // Reuse the verified token
-              };
-            } catch (tokenError) {
-              console.error("Token Verification Error:", tokenError);
-              throw new Error(
-                "Срок действия ссылки истек или токен недействителен. Пожалуйста, авторизуйтесь заново.",
-              );
-            }
-          }
-
-          // =================================================================
-          // SCENARIO 2: DIRECT EMAIL & PASSWORD LOGIN ON PARTNER APP
-          // =================================================================
           if (!credentials?.email || !credentials?.password) {
             throw new Error(
               "Требуется указать адрес электронной почты и пароль",
             );
           }
 
-          // 1. Find user in database
-          const user = await prisma.user.findUnique({
-            where: {
+          const backendUrl =
+            process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8800";
+
+          // 1. Delegate Authentication to Node.js Backend
+          const res = await fetch(`${backendUrl}/api/auth/partner/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
               email: credentials.email,
-            },
+              password: credentials.password,
+            }),
           });
 
-          // 2. Verify user exists AND has a password
-          if (!user || !user.password) {
-            throw new Error("Неверный адрес электронной почты или пароль!");
-          }
+          const data = await res.json();
 
-          // 3. STRICT ROLE CHECK: Block Customers/Performers from logging in here
-          if (user.role !== "partner") {
+          // 2. Handle Backend Rejections
+          if (!res.ok) {
             throw new Error(
-              "Доступ запрещен. Кабинет партнера находится на другой платформе.",
+              data.message || "Неверный адрес электронной почты или пароль!",
             );
           }
 
-          // 4. Verify password
-          const isValidPassword = await bcrypt.compare(
-            credentials.password,
-            user.password,
-          );
+          const { token, user } = data;
 
-          if (!isValidPassword) {
-            throw new Error("Неверный адрес электронной почты или пароль!");
+          if (!token) {
+            throw new Error("Ошибка сервера: токен авторизации не получен.");
           }
 
-          // 5. Generate fresh JWT Token
-          const token = jwt.sign(
-            {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              role: user.role,
-              iat: Math.floor(Date.now() / 1000),
-              exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
-            },
-            secret,
-            {
-              algorithm: "HS256",
-            },
-          );
+          // 3. DECODE JWT NATIVELY TO EXTRACT ID AND ROLE
+          const decodedToken = decodeJwt(token);
 
+          if (!decodedToken || decodedToken.id === undefined) {
+            throw new Error("Ошибка сервера: недействительный токен.");
+          }
+
+          const userId = decodedToken.id;
+          const userRole =
+            decodedToken.role !== undefined ? decodedToken.role : "partner";
+
+          // 4. Return Payload to NextAuth
           return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            role: user.role,
+            id: userId,
+            name: user?.name || "",
+            email: user?.email || credentials.email,
+            phone: user?.phone || null,
+            role: userRole,
+            image: user?.image || null,
             accessToken: token,
           };
         } catch (error: any) {
-          console.error("Authorize Error:", error);
-
-          // Let custom user-friendly messages pass through to the frontend UI
-          const customErrors = [
-            "Требуется указать адрес электронной почты и пароль",
-            "Неверный адрес электронной почты или пароль!",
-            "Доступ запрещен. Этот портал только для партнеров.",
-            "Доступ запрещен. Кабинет партнера находится на другой платформе.",
-            "Срок действия ссылки истек или токен недействителен. Пожалуйста, авторизуйтесь заново.",
-            "Пользователь не найден.",
-          ];
-
-          if (customErrors.includes(error.message)) {
-            throw new Error(error.message);
-          }
-
-          // Mask unhandled DB/system crashes
-          throw new Error(
-            "Внутренняя ошибка сервера. Пожалуйста, попробуйте позже.",
-          );
+          console.error("🚨 Authorize Error:", error.message);
+          throw new Error(error.message || "Системная ошибка сервера");
         }
       },
     }),
   ],
 
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.image = user.image ? user.image.toString() : null;
-        token.name = user.name ? user.name.toString() : "";
-        token.email = user.email ? user.email.toString() : "";
-        token.accessToken = (user as any).accessToken;
-        token.role = (user as any).role;
+    async signIn() {
+      return true;
+    },
+
+    // --- REDIRECT CALLBACK: Forces routing to /dashboard after login ---
+    async redirect({ url, baseUrl }) {
+      if (url.includes("/dashboard")) return url;
+      return `${baseUrl}/dashboard`;
+    },
+
+    // --- JWT CALLBACK ---
+    async jwt({ token, user, account, trigger, session }) {
+      // Session Update hook
+      if (trigger === "update" && session) {
+        if (session.role !== undefined) token.role = session.role;
+        if (session.accessToken) token.accessToken = session.accessToken;
       }
+
+      // Initial Sign In Hook
+      if (account && user) {
+        const isOAuth = ["yandex", "google", "vk"].includes(
+          account.provider || "",
+        );
+
+        if (isOAuth) {
+          // OAUTH DELEGATION TO BACKEND
+          try {
+            const backendUrl =
+              process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8800";
+            const oauthRes = await fetch(`${backendUrl}/api/auth/oauth`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                email: user.email,
+                name: user.name,
+                image: user.image,
+              }),
+            });
+
+            const oauthData = await oauthRes.json();
+
+            if (oauthRes.ok && oauthData.token) {
+              const decodedOAuthToken = decodeJwt(oauthData.token);
+
+              if (decodedOAuthToken) {
+                token.id = decodedOAuthToken.id;
+                token.role =
+                  decodedOAuthToken.role !== undefined
+                    ? decodedOAuthToken.role
+                    : "partner";
+              }
+
+              token.accessToken = oauthData.token;
+            } else {
+              console.error("OAuth Backend Sync Failed:", oauthData);
+            }
+          } catch (err) {
+            console.error("OAuth Backend Fetch Error:", err);
+          }
+        } else {
+          // Credentials login data mapping
+          token.id = user.id;
+          token.role = user.role !== undefined ? user.role : "partner";
+          token.accessToken = user.accessToken;
+        }
+
+        // Standard user info mapping is handled by NextAuth defaults,
+        // but we explicitly sync these if they are present on the returned user object.
+        if (user.name) token.name = user.name;
+        if (user.email) token.email = user.email;
+        if (user.image) token.picture = user.image;
+      }
+
       return token;
     },
+
+    // --- SESSION CALLBACK ---
     async session({ session, token }) {
-      if (session.user) {
+      if (session.user && token) {
         session.user.id = token.id as string;
-        session.user.image = token.image as string;
-        session.user.name = token.name as string;
-        session.user.email = token.email as string;
         session.user.role = token.role as string;
-        (session.user as any).accessToken = token.accessToken as string;
+        session.user.accessToken = token.accessToken as string;
       }
       return session;
     },

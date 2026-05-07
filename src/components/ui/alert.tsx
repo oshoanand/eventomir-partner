@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/helper";
 
 // Define alert variants using class-variance-authority
 // Определяем варианты alert с помощью class-variance-authority

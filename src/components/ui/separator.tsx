@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as SeparatorPrimitive from "@radix-ui/react-separator";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/helper";
 
 // Separator component definition, wraps Radix UI Separator
 // Определение компонента Separator, оборачивает Radix UI Separator

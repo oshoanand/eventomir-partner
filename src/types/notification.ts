@@ -1,63 +1,56 @@
 // Common fields for all notifications
 export interface BaseNotification {
-  id: string | number;
+  id: string;
+  title?: string; // 🚨 FIX: Added title to the base type
+  message?: string;
   isRead?: boolean;
-  message?: string; // Used in the UI list
   createdAt: string | Date;
 }
 
-// 1. Token Notification
-export interface TokenPayload extends BaseNotification {
-  type: "TOKEN";
-  tokenCode?: string;
-  orderNumber?: string;
-  mobileNumber?: string;
-  status?: string;
-  data?: any; // Fallback for extra fields
-}
-
-// 2. Job Notification
-export interface JobPayload extends BaseNotification {
-  type: "JOB";
-  description?: string;
-  location?: string;
-  cost?: string;
-  postedBy?: string;
-  data?: any;
-}
-
-// 3. Chat Message Notification (NEW)
+// Chat Message Notification
 export interface ChatMessagePayload extends BaseNotification {
   type: "CHAT_MESSAGE";
   data: {
     chatId: string;
     senderName: string;
     preview: string;
+    url?: string;
+    [key: string]: any; // 🚨 FIX: Allow other data fields safely
   };
 }
 
-// 4. Booking Request Notification (Used in NotificationsPage)
-export interface BookingRequestPayload extends BaseNotification {
-  type: "BOOKING_REQUEST";
+// Booking Notification
+export interface BookingPayload extends BaseNotification {
+  type:
+    | "NEW_BOOKING"
+    | "BOOKING_ACCEPTED"
+    | "BOOKING_REJECTED"
+    | "BOOKING_CANCELLED";
   data: {
     bookingId: string;
     customerId?: string;
     status?: string;
+    url?: string;
+    [key: string]: any; // 🚨 FIX: Allow other data fields safely
   };
+}
+
+// Generic System Notification
+export interface SystemPayload extends BaseNotification {
+  type: "SYSTEM" | string;
+  data?: Record<string, any> & { url?: string };
 }
 
 // Union Type
 export type NotificationItem =
-  | TokenPayload
-  | JobPayload
   | ChatMessagePayload
-  | BookingRequestPayload
-  | (BaseNotification & { type: string; data?: any }); // Fallback for generic types
+  | BookingPayload
+  | SystemPayload;
 
 export interface NotificationContextType {
   notifications: NotificationItem[];
   unreadCount: number;
   markAllAsRead: () => void;
-  markAsRead: (id: string) => void; // Added this missing method
+  markAsRead: (id: string) => void;
   socket: any;
 }

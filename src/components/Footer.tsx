@@ -3,163 +3,119 @@
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Send } from "lucide-react";
-import { useSession } from "next-auth/react"; // <-- Import useSession
-
+import { useSession } from "next-auth/react";
+import { VkontakteIcon, TelegramIcon } from "@/components/Icons";
 import { useSiteSettings } from "@/components/providers/SiteThemeProvider";
-
-const VkontakteIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    fill="currentColor"
-    viewBox="0 0 16 16"
-  >
-    <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05S0 3.603 0 8.049c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H10.28V16c3.824-.604 6.75-3.934 6.75-7.951" />
-  </svg>
-);
+import { Mail, Phone, ExternalLink } from "lucide-react";
 
 const Footer = () => {
   const settings = useSiteSettings();
-  const { status } = useSession(); // <-- Get session status
+  const { status } = useSession();
   const currentYear = new Date().getFullYear();
   const isLoading = !settings;
 
-  const isLoggedIn = status === "authenticated"; // <-- Check if logged in
-
   const contacts = settings?.contacts;
+  const siteName = settings?.siteName || "Eventomir";
+  const mainAppUrl =
+    process.env.NEXT_PUBLIC_WEB_APP_URL || "https://eventomir.ru";
 
   return (
-    <footer className="bg-muted text-muted-foreground py-8 mt-16">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-y-8 md:gap-x-8">
-          {/* Section 1: About Us */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              {settings?.siteName || "Eventomir"}
-            </h3>
-            <p className="text-sm">
-              Платформа для поиска и бронирования лучших исполнителей для ваших
-              мероприятий.
+    <footer className="relative bg-slate-950 border-t border-slate-900 pt-16 pb-8 mt-auto overflow-hidden text-slate-400">
+      {/* --- Subtle Background Glows matching the Hero section --- */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('/images/noise.svg')] opacity-10 mix-blend-overlay pointer-events-none"></div>
+
+      <div className="container mx-auto px-5 md:px-8 relative z-10">
+        {/* Main Footer Content: Flex layout instead of Grid */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-10 text-center md:text-left">
+          {/* 1. Brand & Info */}
+          <div className="flex flex-col items-center md:items-start space-y-4 max-w-sm">
+            <Link
+              href="/"
+              className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400 transition-colors"
+            >
+              {siteName}{" "}
+              <span className="opacity-70  text-2xl font-black tracking-tighter transition-colors text-white">
+                Партнер
+              </span>
+            </Link>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Платформа для масштабирования вашего ивент-бизнеса. Находите новых
+              клиентов и управляйте заказами в одной экосистеме.
             </p>
           </div>
 
-          {/* Section 2: Quick Links */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              Навигация
-            </h3>
-            <nav className="flex flex-col space-y-2 text-sm">
-              <Link href="/" className="hover:text-foreground hover:underline">
-                Главная
-              </Link>
-              <Link
-                href="/search"
-                className="hover:text-foreground hover:underline"
-              >
-                Поиск
-              </Link>
-              <Link
-                href="/pricing"
-                className="hover:text-foreground hover:underline"
-              >
-                Тарифы
-              </Link>
-              <Link
-                href="/blog"
-                className="hover:text-foreground hover:underline"
-              >
-                Блог
-              </Link>
-              <Link
-                href="/about"
-                className="hover:text-foreground hover:underline"
-              >
-                О нас
-              </Link>
-            </nav>
-          </div>
+          {/* 2. Single Row of Links */}
+          <nav className="flex flex-wrap justify-center md:justify-end gap-x-8 gap-y-4 text-sm font-medium text-slate-300">
+            <Link
+              href={mainAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors flex items-center gap-1.5"
+            >
+              Главная платформа{" "}
+              <ExternalLink className="h-3.5 w-3.5 opacity-50" />
+            </Link>
+            <Link
+              href={`${mainAppUrl}/pricing`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors flex items-center gap-1.5"
+            >
+              Тарифы <ExternalLink className="h-3.5 w-3.5 opacity-50" />
+            </Link>
+            <Link
+              href="/documents"
+              className="hover:text-white transition-colors"
+            >
+              Справка и Документы
+            </Link>
+          </nav>
 
-          {/* Section 3: For Users */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              Пользователям
-            </h3>
-            <nav className="flex flex-col space-y-2 text-sm">
-              {/* Conditional rendering based on auth status */}
-              {!isLoggedIn && (
-                <>
-                  <Link
-                    href="/login"
-                    className="hover:text-foreground hover:underline"
-                  >
-                    Войти
-                  </Link>
-                  <Link
-                    href="/register-customer"
-                    className="hover:text-foreground hover:underline"
-                  >
-                    Регистрация заказчика
-                  </Link>
-                  <Link
-                    href="/register-performer"
-                    className="hover:text-foreground hover:underline"
-                  >
-                    Регистрация исполнителя
-                  </Link>
-                </>
-              )}
-              <Link
-                href="/partnership"
-                className="hover:text-foreground hover:underline"
-              >
-                Партнерская программа
-              </Link>
-              <Link
-                href="/documents"
-                className="hover:text-foreground hover:underline"
-              >
-                Документы
-              </Link>
-            </nav>
-          </div>
+          {/* 3. Contacts & Socials */}
+          <div className="flex flex-col items-center md:items-end space-y-4">
+            {isLoading ? (
+              <div className="space-y-3 flex flex-col items-end">
+                <Skeleton className="h-5 w-40 bg-slate-800" />
+                <div className="flex gap-3">
+                  <Skeleton className="h-10 w-10 rounded-full bg-slate-800" />
+                  <Skeleton className="h-10 w-10 rounded-full bg-slate-800" />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-slate-300">
+                  {contacts?.phone && (
+                    <a
+                      href={`tel:${contacts.phone}`}
+                      className="flex items-center gap-2 hover:text-white transition-colors group"
+                    >
+                      <Phone className="h-4 w-4 text-primary group-hover:text-blue-400 transition-colors" />
+                      {contacts.phone}
+                    </a>
+                  )}
+                  {contacts?.email && (
+                    <a
+                      href={`mailto:${contacts.email}`}
+                      className="flex items-center gap-2 hover:text-white transition-colors group"
+                    >
+                      <Mail className="h-4 w-4 text-primary group-hover:text-blue-400 transition-colors" />
+                      {contacts.email}
+                    </a>
+                  )}
+                </div>
 
-          {/* Section 4: Contacts & Social Media */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              Контакты
-            </h3>
-            <div className="text-sm space-y-2">
-              {isLoading ? (
-                <>
-                  <Skeleton className="h-4 w-40" />
-                  <Skeleton className="h-4 w-32" />
-                </>
-              ) : (
-                <>
-                  <p>Email: {contacts?.email || "[Ваш Email]"}</p>
-                  <p>Телефон: {contacts?.phone || "[Ваш Телефон]"}</p>
-                </>
-              )}
-            </div>
-            <div className="flex space-x-4 mt-4">
-              {isLoading ? (
-                <>
-                  <Skeleton className="h-5 w-5 rounded-full" />
-                  <Skeleton className="h-5 w-5 rounded-full" />
-                </>
-              ) : (
-                <>
+                <div className="flex items-center gap-3">
                   {contacts?.vkLink && (
                     <Link
                       href={contacts.vkLink}
                       aria-label="VK"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-foreground"
+                      className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-primary hover:border-primary text-slate-300 hover:text-white transition-all duration-300"
                     >
-                      <VkontakteIcon />
+                      <VkontakteIcon className="w-5 h-5" />
                     </Link>
                   )}
                   {contacts?.telegramLink && (
@@ -168,22 +124,49 @@ const Footer = () => {
                       aria-label="Telegram"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-foreground"
+                      className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-blue-500 hover:border-blue-500 text-slate-300 hover:text-white transition-all duration-300"
                     >
-                      <Send size={20} />
+                      <TelegramIcon className="w-5 h-5" />
                     </Link>
                   )}
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
-        <Separator className="my-8 bg-border" />
-        <div className="text-center text-xs">
-          <p>
-            &copy; {currentYear} {settings?.siteName || "Eventomir"}. Все права
-            защищены.
+
+        <Separator className="my-8 bg-slate-800" />
+
+        {/* Bottom Footer: Legal & Copyright */}
+        <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-6 text-xs text-slate-500 font-medium">
+          <p className="flex items-center gap-3">
+            &copy; {currentYear} ООО «АМУЛЕТ КОМПАНИ». Все права защищены.
+            <span className="px-2 py-0.5 bg-slate-800 rounded text-[9px] font-black uppercase tracking-widest text-slate-400">
+              18+
+            </span>
           </p>
+
+          <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
+            <span className="hidden md:inline">
+              ИНН: 6319258622 • ОГРН: 1226300038360
+            </span>
+            <Link
+              href={`${mainAppUrl}/documents#privacy`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors underline-offset-4 hover:underline"
+            >
+              Конфиденциальность
+            </Link>
+            <Link
+              href={`${mainAppUrl}/documents#terms`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors underline-offset-4 hover:underline"
+            >
+              Условия использования
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
