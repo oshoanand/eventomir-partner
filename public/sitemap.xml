@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <!-- Главная страница -->
     <url>
-        <loc>https://eventomir.ru/</loc>
+        <loc>https://partner.eventomir.ru/</loc>
         <lastmod>2024-08-19</lastmod> <!-- ЗАМЕНИТЬ НА ДАТУ ПОСЛЕДНЕГО ИЗМЕНЕНИЯ -->
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>

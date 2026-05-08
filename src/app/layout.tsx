@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
   // 2. Absolute URLs for Social Cards
   // WhatsApp and Telegram strictly require absolute URLs for images.
   const appDomain =
-    process.env.NEXT_PUBLIC_BASE_URL || "https://app.eventomir.ru";
+    process.env.NEXT_PUBLIC_BASE_URL || "https://partner.eventomir.ru";
   const favicon = settings?.faviconUrl || "/favicon.ico";
 
   // Best Practice: If logoUrl is empty, fallback to a specific 1200x630 OG image in your public folder

@@ -12,4 +12,4 @@ Disallow: /reset-password/ # Disallow indexing of password reset pages (token-de
 
 # Specify the path to the sitemap
 # Указать путь к карте сайта
-Sitemap: https://eventomir.ru/sitemap.xml
+Sitemap: https://partner.eventomir.ru/sitemap.xml
