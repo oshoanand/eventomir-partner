@@ -63,7 +63,6 @@ export const authOptions: NextAuthOptions = {
           const backendUrl =
             process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8800";
 
-          // 1. Delegate Authentication to Node.js Backend
           const res = await fetch(`${backendUrl}/api/auth/partner/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -75,7 +74,6 @@ export const authOptions: NextAuthOptions = {
 
           const data = await res.json();
 
-          // 2. Handle Backend Rejections
           if (!res.ok) {
             throw new Error(
               data.message || "Неверный адрес электронной почты или пароль!",
@@ -84,24 +82,20 @@ export const authOptions: NextAuthOptions = {
 
           const { token, user } = data;
 
-          if (!token) {
+          if (!token)
             throw new Error("Ошибка сервера: токен авторизации не получен.");
-          }
 
-          // 3. DECODE JWT NATIVELY TO EXTRACT ID AND ROLE
           const decodedToken = decodeJwt(token);
 
           if (!decodedToken || decodedToken.id === undefined) {
             throw new Error("Ошибка сервера: недействительный токен.");
           }
 
-          const userId = decodedToken.id;
-          const userRole =
-            decodedToken.role !== undefined ? decodedToken.role : "partner";
+          // 🚨 FIX: Strict mapping. If role is empty, keep it empty.
+          const userRole = decodedToken.role || "";
 
-          // 4. Return Payload to NextAuth
           return {
-            id: userId,
+            id: decodedToken.id,
             name: user?.name || "",
             email: user?.email || credentials.email,
             phone: user?.phone || null,
@@ -122,42 +116,42 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    // --- REDIRECT CALLBACK: Forces routing to /dashboard after login ---
+    // NextAuth redirect callback lacks user session context, so we let it route to
+    // /dashboard, and handle the role-based redirection on the frontend.
     async redirect({ url, baseUrl }) {
       if (url.includes("/dashboard")) return url;
       return `${baseUrl}/dashboard`;
     },
 
-    // --- JWT CALLBACK ---
     async jwt({ token, user, account, trigger, session }) {
-      // Session Update hook
       if (trigger === "update" && session) {
         if (session.role !== undefined) token.role = session.role;
         if (session.accessToken) token.accessToken = session.accessToken;
       }
 
-      // Initial Sign In Hook
       if (account && user) {
         const isOAuth = ["yandex", "google", "vk"].includes(
           account.provider || "",
         );
 
         if (isOAuth) {
-          // OAUTH DELEGATION TO BACKEND
           try {
             const backendUrl =
               process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8800";
-            const oauthRes = await fetch(`${backendUrl}/api/auth/oauth`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-                email: user.email,
-                name: user.name,
-                image: user.image,
-              }),
-            });
+            const oauthRes = await fetch(
+              `${backendUrl}/api/auth/oauth/partner`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  email: user.email,
+                  name: user.name,
+                  image: user.image,
+                }),
+              },
+            );
 
             const oauthData = await oauthRes.json();
 
@@ -166,10 +160,9 @@ export const authOptions: NextAuthOptions = {
 
               if (decodedOAuthToken) {
                 token.id = decodedOAuthToken.id;
-                token.role =
-                  decodedOAuthToken.role !== undefined
-                    ? decodedOAuthToken.role
-                    : "partner";
+                // 🚨 FIX: Do NOT fallback to "partner". If the backend says the role is "",
+                // it MUST remain "" so the frontend knows they need to finish registration.
+                token.role = decodedOAuthToken.role || "";
               }
 
               token.accessToken = oauthData.token;
@@ -182,12 +175,10 @@ export const authOptions: NextAuthOptions = {
         } else {
           // Credentials login data mapping
           token.id = user.id;
-          token.role = user.role !== undefined ? user.role : "partner";
+          token.role = user.role || "";
           token.accessToken = user.accessToken;
         }
 
-        // Standard user info mapping is handled by NextAuth defaults,
-        // but we explicitly sync these if they are present on the returned user object.
         if (user.name) token.name = user.name;
         if (user.email) token.email = user.email;
         if (user.image) token.picture = user.image;
@@ -196,7 +187,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
 
-    // --- SESSION CALLBACK ---
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = token.id as string;

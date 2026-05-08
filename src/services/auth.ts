@@ -23,7 +23,7 @@ export interface PartnerRegistrationData {
 }
 
 export interface CompleteRegistrationData {
-  role: string;
+  role?: string;
   phone?: string;
   city?: string;
   accountType?: string;

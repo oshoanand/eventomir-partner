@@ -30,7 +30,7 @@ interface ClientMenuProps {
   userRole: "customer" | "performer" | "partner" | null;
   userImage?: string | null;
   userName: string;
-  useTransparentStyle: boolean; // 🚨 FIXED: Changed from 'scrolled' to 'useTransparentStyle'
+  useTransparentStyle: boolean;
 }
 
 const ClientMenu: React.FC<ClientMenuProps> = ({
@@ -38,13 +38,27 @@ const ClientMenu: React.FC<ClientMenuProps> = ({
   userRole,
   userImage,
   userName,
-  useTransparentStyle, // 🚨 FIXED
+  useTransparentStyle,
 }) => {
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => setIsClient(true), []);
+
+  // 🚨 NEW FUNCTIONALITY: Disable background scroll when mobile drawer is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    // Cleanup function to ensure scroll is restored if the component unmounts
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
 
   if (!isClient) return null;
 
@@ -97,7 +111,7 @@ const ClientMenu: React.FC<ClientMenuProps> = ({
               >
                 <div className="flex items-center justify-between p-4 border-b border-border/50">
                   <span className="font-bold text-lg text-foreground">
-                    Меню
+                    Eventomir партнер
                   </span>
                   <button
                     onClick={() => setIsMenuOpen(false)}
@@ -122,10 +136,7 @@ const ClientMenu: React.FC<ClientMenuProps> = ({
                         href="/register"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        <Button
-                          variant="outline"
-                          className="w-full font-bold h-12 rounded-xl text-md"
-                        >
+                        <Button className="w-full font-bold h-12 rounded-xl text-md">
                           Стать партнером
                         </Button>
                       </Link>
@@ -148,7 +159,7 @@ const ClientMenu: React.FC<ClientMenuProps> = ({
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-base truncate">
+                          <p className="font-bold text-black truncate">
                             {userName || "Пользователь"}
                           </p>
                           <p className="text-xs text-muted-foreground truncate">
@@ -215,7 +226,7 @@ const ClientMenu: React.FC<ClientMenuProps> = ({
           <Link href="/login">
             <Button
               variant="ghost"
-              className={`font-semibold rounded-full ${
+              className={`font-semibold rounded-full  ${
                 useTransparentStyle
                   ? "hover:bg-white/10 hover:text-white text-white"
                   : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
