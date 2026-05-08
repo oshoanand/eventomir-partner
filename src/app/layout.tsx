@@ -19,18 +19,26 @@ export const viewport: Viewport = {
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
 
-  // 1. Core Variables with Safe Fallbacks
-  const siteName = ` ${settings?.siteName} Партнер ` || "Eventomir Партнер";
+  // 🚨 FIX 1: Safely handle undefined settings without printing "undefined Партнер"
+  const baseSiteName = settings?.siteName || "Eventomir";
+  const siteName = `${baseSiteName} Партнер`;
   const defaultDescription = `Найдите лучших фотографов, диджеев, ведущих, поваров, транспорт и других профессионалов для вашего мероприятия в России на ${siteName}.`;
 
-  // 2. Absolute URLs for Social Cards
-  // WhatsApp and Telegram strictly require absolute URLs for images.
-  const appDomain =
+  // 🚨 FIX 2: Ensure clean domain without trailing slashes
+  const rawDomain =
     process.env.NEXT_PUBLIC_BASE_URL || "https://partner.eventomir.ru";
+  const appDomain = rawDomain.endsWith("/")
+    ? rawDomain.slice(0, -1)
+    : rawDomain;
+
   const favicon = settings?.faviconUrl || "/favicon.ico";
 
-  // Best Practice: If logoUrl is empty, fallback to a specific 1200x630 OG image in your public folder
-  const ogImage = settings?.logoUrl || "/images/og-image.png";
+  // 🚨 FIX 3: FORCE Absolute URL for the Open Graph Image
+  let ogImage = settings?.logoUrl || "/images/og-image.png";
+  // If the image is a relative path (starts with '/'), prepend the absolute domain
+  if (ogImage.startsWith("/")) {
+    ogImage = `${appDomain}${ogImage}`;
+  }
 
   return {
     metadataBase: new URL(appDomain),
@@ -40,7 +48,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: defaultDescription,
     applicationName: siteName,
-    authors: [{ name: `${siteName} Team`, url: appDomain }],
+    authors: [{ name: `${baseSiteName} Team`, url: appDomain }],
     generator: "Next.js",
     keywords: [
       "организация мероприятий",
@@ -49,9 +57,9 @@ export async function generateMetadata(): Promise<Metadata> {
       "DJ на праздник",
       "ведущий на корпоратив",
       "аренда транспорта",
-      siteName,
+      baseSiteName,
     ],
-    creator: `${siteName} Team`,
+    creator: `${baseSiteName} Team`,
     publisher: siteName,
     formatDetection: {
       telephone: true,
@@ -59,39 +67,39 @@ export async function generateMetadata(): Promise<Metadata> {
       email: true,
     },
 
-    // --- OPEN GRAPH (Facebook, WhatsApp, LinkedIn) ---
+    // --- OPEN GRAPH (Facebook, WhatsApp, LinkedIn, VK, Telegram) ---
     openGraph: {
       type: "website",
       locale: "ru_RU",
-      url: "/",
+      url: appDomain, // Use absolute domain here too
       title: `${siteName} — Ваш гид в мире событий`,
       description: defaultDescription,
       siteName: siteName,
       images: [
         {
-          url: ogImage,
-          width: 1200, // Optimal width for large cards
-          height: 630, // Optimal height for large cards
+          url: ogImage, // Now guaranteed to be absolute (e.g., https://...)
+          width: 1200,
+          height: 630,
           alt: `Логотип и баннер ${siteName}`,
-          type: "image/png", // Helps WhatsApp parse the image faster
+          type: "image/png",
         },
       ],
     },
 
-    // --- TWITTER / TELEGRAM CARDS ---
+    // --- TWITTER CARDS ---
     twitter: {
-      card: "summary_large_image", // Forces a large, beautiful image card (not a tiny square)
+      card: "summary_large_image",
       title: `${siteName} — Поиск профи для мероприятий`,
       description: defaultDescription,
-      images: [ogImage],
-      creator: "@eventomir", // Optional: Add your Twitter handle if you have one
+      images: [ogImage], // Guaranteed absolute
+      creator: "@eventomir",
     },
 
     // --- ICONS & PWA ---
     icons: {
       icon: favicon,
       shortcut: favicon,
-      apple: favicon, // Essential for iOS Home Screen sharing
+      apple: favicon,
     },
     manifest: "/manifest.json",
 
@@ -103,7 +111,7 @@ export async function generateMetadata(): Promise<Metadata> {
         index: true,
         follow: true,
         "max-video-preview": -1,
-        "max-image-preview": "large", // Tells Google to show large image snippets
+        "max-image-preview": "large",
         "max-snippet": -1,
       },
     },
@@ -114,7 +122,6 @@ export async function generateMetadata(): Promise<Metadata> {
       yandex: "ВАШ_КОД_ВЕРИФИКАЦИИ_ЯНДЕКС", // Replace in production
     },
 
-    // Canonical links prevent duplicate content penalties
     alternates: {
       canonical: "/",
       languages: {
@@ -129,7 +136,6 @@ interface RootLayoutProps {
 }
 
 export default async function RootLayout({ children }: RootLayoutProps) {
-  // Fetch settings on the server side
   const settings = await getSiteSettings();
 
   return (
@@ -153,7 +159,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         />
       </head>
 
-      <body className="antialiased flex flex-col min-h-screen font-sans ">
+      <body className="antialiased flex flex-col min-h-screen font-sans">
         <Providers initialSettings={settings}>{children}</Providers>
       </body>
     </html>
