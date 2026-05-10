@@ -7,7 +7,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 
 import {
   Card,
@@ -119,10 +118,10 @@ const LoginPage = () => {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="animate-pulse flex flex-col items-center">
           <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"></div>
-          <div className="h-4 w-32 bg-slate-800 rounded"></div>
+          <div className="h-4 w-32 bg-slate-200 rounded"></div>
         </div>
       </div>
     );
@@ -131,28 +130,28 @@ const LoginPage = () => {
   // --- ALREADY LOGGED IN STATE ---
   if (status === "authenticated") {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-950 relative overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('/images/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none"></div>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 relative overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px] pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.03] bg-[url('/images/noise.svg')] mix-blend-multiply pointer-events-none"></div>
 
-        <Card className="w-full max-w-[400px] text-center shadow-2xl border-slate-800 bg-slate-900/80 backdrop-blur-xl rounded-[2rem] overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-500">
+        <Card className="w-full max-w-[400px] text-center shadow-2xl shadow-slate-200/50 border-slate-200 bg-white/80 backdrop-blur-xl rounded-[2rem] overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-500">
           <CardHeader className="pb-4 pt-10">
-            <div className="mx-auto bg-amber-500/10 text-amber-400 h-20 w-20 flex items-center justify-center rounded-full mb-6 ring-8 ring-amber-500/5">
+            <div className="mx-auto bg-amber-100 text-amber-600 h-20 w-20 flex items-center justify-center rounded-full mb-6 ring-8 ring-amber-50">
               <AlertCircle className="h-10 w-10" />
             </div>
-            <CardTitle className="text-2xl font-bold tracking-tight text-white">
+            <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
               Вы уже вошли
             </CardTitle>
-            <CardDescription className="text-sm mt-2 text-slate-400">
+            <CardDescription className="text-sm mt-2 text-slate-500">
               Вы авторизованы на платформе как{" "}
-              <strong className="text-white">Partner</strong> <br />
+              <strong className="text-slate-900">Partner</strong> <br />
               <span className="text-slate-500 mt-1 block">
                 ({session.user?.email})
               </span>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 px-8 pb-10">
-            <div className="p-4 bg-slate-800/50 rounded-xl text-xs text-slate-400 mb-6 leading-relaxed border border-slate-700/50">
+            <div className="p-4 bg-slate-50 rounded-xl text-xs text-slate-600 mb-6 leading-relaxed border border-slate-100">
               Чтобы войти в другой аккаунт, вам необходимо сначала выйти из
               текущего профиля.
             </div>
@@ -166,7 +165,7 @@ const LoginPage = () => {
             <Button
               variant="outline"
               asChild
-              className="w-full h-12 rounded-xl font-bold bg-transparent border-slate-700 text-white hover:bg-slate-800 hover:text-white"
+              className="w-full h-12 rounded-xl font-bold bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-sm"
             >
               <Link href="/dashboard">
                 Вернуться в панель <ArrowRight className="ml-2 h-5 w-5" />
@@ -180,60 +179,55 @@ const LoginPage = () => {
 
   // --- MAIN LOGIN STATE (Split Screen) ---
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-950 overflow-hidden">
-      {/* ======================= LEFT PANE (BRANDING & IMAGE) ======================= */}
-      <div className="hidden lg:flex relative w-full h-full flex-col  p-12 overflow-hidden bg-slate-900 border-r border-slate-800/60">
-        {/* Background Image & Overlays */}
-        {/* Note: Using a high-quality event placeholder image */}
-        <Image
-          src="/images/loginBG.webp"
-          alt="Eventomir Events"
-          fill
-          className="object-cover opacity-40 mix-blend-overlay"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
-        <div className="absolute inset-0 bg-[url('/images/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50 overflow-hidden relative">
+      {/* ======================= GLOBAL AMBIENT BACKGROUND ======================= */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.03] bg-[url('/images/noise.svg')] mix-blend-multiply pointer-events-none"></div>
 
+      {/* ======================= LEFT PANE (BRANDING) ======================= */}
+      <div className="hidden lg:flex relative w-full h-full flex-col p-12 z-10 ">
         {/* Top Branding */}
-        <div className="relative z-10 flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="text-2xl font-black tracking-tighter transition-colors text-white"
+            className="text-2xl font-black tracking-tighter transition-colors text-primary"
           >
             Eventomir <span className="opacity-70 font-medium">Партнер</span>
           </Link>
         </div>
 
         {/* Bottom Content (Value Prop & Floating Metric) */}
-        <div className="relative z-10 space-y-8 max-w-xl py-8">
-          {/* Floating Metric Card matching B2B theme */}
-          <div className="p-5 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-md shadow-2xl w-64 animate-in slide-in-from-bottom-8 duration-700">
+        <div className=" space-y-8 max-w-xl py-8">
+          {/* Floating Metric Card matching Light B2B theme */}
+          <div className="p-5 rounded-2xl bg-white/80 border border-white/60 backdrop-blur-md shadow-xl shadow-slate-200/50 w-64 animate-in slide-in-from-bottom-8 duration-700">
             <div className="flex items-center gap-4 mb-3">
-              <div className="p-2.5 bg-primary/20 rounded-xl">
+              <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20">
                 <TrendingUp className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-xs text-slate-300 font-medium">
+                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">
                   Новые заказы
                 </p>
-                <p className="text-xl font-bold text-white">+34% за месяц</p>
+                <p className="text-xl font-black text-slate-900">
+                  +34% за месяц
+                </p>
               </div>
             </div>
-            <div className="w-full bg-slate-800/50 rounded-full h-1.5">
-              <div className="bg-primary h-1.5 rounded-full w-[75%] shadow-[0_0_10px_rgba(var(--primary),0.8)]"></div>
+            <div className="w-full bg-slate-200 rounded-full h-1.5 shadow-inner">
+              <div className="bg-primary h-1.5 rounded-full w-[75%] shadow-sm"></div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-medium backdrop-blur-md">
-              <Sparkles className="w-4 h-4" /> B2B Платформа
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 text-sm font-bold shadow-sm backdrop-blur-md">
+              <Sparkles className="w-4 h-4 text-primary" /> B2B Платформа
             </div>
-            <h2 className="text-4xl font-bold text-white leading-tight">
+            <h2 className="text-4xl font-bold text-slate-900 leading-tight tracking-tight">
               Управляйте своим <br />
               <span className="text-primary">ивент-бизнесом</span> эффективно.
             </h2>
-            <p className="text-slate-400 text-lg leading-relaxed max-w-md">
+            <p className="text-slate-500 text-lg leading-relaxed max-w-md font-medium">
               Получайте заявки, анализируйте статистику и увеличивайте свой
               доход с помощью профессиональных инструментов Eventomir.
             </p>
@@ -242,29 +236,24 @@ const LoginPage = () => {
       </div>
 
       {/* ======================= RIGHT PANE (LOGIN FORM) ======================= */}
-      <div className="flex w-full h-full items-center justify-center p-4 sm:p-8 relative">
-        {/* Ambient Glowing Background (Visible mostly on mobile, acts as backing on desktop) */}
-        <div className="absolute top-[-10%] right-[-5%] w-[60%] h-[60%] rounded-full bg-primary/10 blur-[120px] pointer-events-none lg:bg-primary/5" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none lg:bg-blue-600/5" />
-        <div className="absolute inset-0 bg-[url('/images/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none lg:hidden"></div>
-
+      <div className="flex w-full h-full items-center justify-center p-4 sm:p-8 relative z-10">
         {/* The Card */}
-        <Card className="w-full max-w-[420px] shadow-2xl border-slate-800/60 bg-slate-900/80 lg:bg-slate-900/40 backdrop-blur-2xl rounded-[2rem] overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-500">
-          <CardHeader className="space-y-2 pt-10 pb-6 text-center border-b border-slate-800/50">
+        <Card className="w-full max-w-[420px] shadow-2xl shadow-slate-200/60 border-slate-200 bg-white/90 lg:bg-white/60 backdrop-blur-2xl rounded-[2rem] overflow-hidden relative animate-in fade-in zoom-in-95 duration-500">
+          <CardHeader className="space-y-2 p-6 text-center border-b border-slate-100">
             {/* Show logo only on mobile since left pane handles desktop logo */}
             <div className="lg:hidden mb-2">
-              <h1 className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+              <h1 className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary to-orange-400">
                 Eventomir{" "}
-                <span className="opacity-70  text-2xl font-black tracking-tighter transition-colors text-white">
+                <span className="opacity-80 font-medium text-slate-900">
                   Партнер
                 </span>
               </h1>
             </div>
 
-            <CardTitle className="text-2xl font-bold text-white hidden lg:block">
+            <CardTitle className="text-2xl font-bold text-slate-900 hidden lg:block">
               Вход в кабинет
             </CardTitle>
-            <CardDescription className="text-sm font-medium text-slate-400">
+            <CardDescription className="text-sm font-medium text-slate-500">
               Войдите для управления заказами и финансами
             </CardDescription>
           </CardHeader>
@@ -280,22 +269,22 @@ const LoginPage = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-400 ml-1">
+                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-500 ml-1">
                         Email
                       </FormLabel>
                       <FormControl>
                         <div className="relative group">
-                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                           <Input
                             placeholder="example@mail.com"
                             {...field}
                             type="email"
                             disabled={isAnyLoading}
-                            className="pl-12 h-12 rounded-xl bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600 focus:bg-slate-900 focus:border-primary/50 transition-all text-sm"
+                            className="pl-12 h-12 rounded-xl bg-slate-50/50 hover:bg-slate-100/50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary/50 transition-all text-sm shadow-sm"
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="ml-1 text-xs text-red-400" />
+                      <FormMessage className="ml-1 text-xs text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -304,22 +293,22 @@ const LoginPage = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-400 ml-1">
+                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-500 ml-1">
                         Пароль
                       </FormLabel>
                       <FormControl>
                         <div className="relative group">
-                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                           <Input
                             placeholder="••••••••"
                             {...field}
                             type="password"
                             disabled={isAnyLoading}
-                            className="pl-12 h-12 rounded-xl bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600 focus:bg-slate-900 focus:border-primary/50 transition-all text-sm"
+                            className="pl-12 h-12 rounded-xl bg-slate-50/50 hover:bg-slate-100/50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary/50 transition-all text-sm shadow-sm"
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="ml-1 text-xs text-red-400" />
+                      <FormMessage className="ml-1 text-xs text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -327,7 +316,7 @@ const LoginPage = () => {
                 <div className="flex justify-end pt-1">
                   <Link
                     href="/forgot-password"
-                    className="text-xs font-semibold text-slate-400 hover:text-primary transition-colors underline-offset-4 hover:underline"
+                    className="text-xs font-bold text-slate-400 hover:text-primary transition-colors underline-offset-4 hover:underline"
                   >
                     Забыли пароль?
                   </Link>
@@ -336,7 +325,7 @@ const LoginPage = () => {
                 <Button
                   type="submit"
                   disabled={isAnyLoading}
-                  className="w-full h-12 mt-2 rounded-xl font-bold text-sm shadow-[0_0_20px_rgba(var(--primary),0.2)] hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="w-full h-12 mt-2 rounded-xl font-bold text-sm shadow-[0_4px_14px_rgba(249,115,22,0.25)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all"
                 >
                   {isSubmitting && (
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -349,10 +338,10 @@ const LoginPage = () => {
             {/* Separator */}
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-800" />
+                <span className="w-full border-t border-slate-200" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-slate-900 lg:bg-slate-900/60 px-3 text-slate-500 font-semibold tracking-wider text-[10px]">
+                <span className="bg-white lg:bg-slate-50/80 px-3 text-slate-400 font-bold tracking-wider text-[10px]">
                   Или войти через
                 </span>
               </div>
@@ -365,16 +354,14 @@ const LoginPage = () => {
                 variant="outline"
                 onClick={() => handleOAuthLogin("google")}
                 disabled={isAnyLoading}
-                className="w-full h-12 rounded-xl bg-slate-800/50 text-white hover:bg-slate-800 hover:text-white border-slate-700 relative overflow-hidden transition-all group"
+                className="w-full h-12 rounded-xl bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 border-slate-200 shadow-sm relative overflow-hidden transition-all group"
               >
                 {loadingProvider === "google" ? (
                   <Loader2 className="w-5 h-5 animate-spin absolute left-4 text-slate-400" />
                 ) : (
                   <GoogleIcon className="w-5 h-5 absolute left-4 group-hover:scale-110 transition-transform" />
                 )}
-                <span className="font-semibold text-sm">
-                  Войти через Google
-                </span>
+                <span className="font-bold text-sm">Войти через Google</span>
               </Button>
 
               <Button
@@ -382,16 +369,14 @@ const LoginPage = () => {
                 variant="outline"
                 onClick={() => handleOAuthLogin("yandex")}
                 disabled={isAnyLoading}
-                className="w-full h-12 rounded-xl bg-slate-800/50 text-white hover:bg-slate-800 hover:text-white border-slate-700 relative overflow-hidden transition-all group"
+                className="w-full h-12 rounded-xl bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 border-slate-200 shadow-sm relative overflow-hidden transition-all group"
               >
                 {loadingProvider === "yandex" ? (
                   <Loader2 className="w-5 h-5 animate-spin absolute left-4 text-slate-400" />
                 ) : (
                   <YandexIcon className="w-5 h-5 absolute left-4 group-hover:scale-110 transition-transform" />
                 )}
-                <span className="font-semibold text-sm">
-                  Войти через Яндекс
-                </span>
+                <span className="font-bold text-sm">Войти через Яндекс</span>
               </Button>
 
               <Button
@@ -399,24 +384,22 @@ const LoginPage = () => {
                 variant="outline"
                 onClick={() => handleOAuthLogin("vk")}
                 disabled={isAnyLoading}
-                className="w-full h-12 rounded-xl bg-[#0077FF]/10 border-transparent text-[#0077FF] hover:bg-[#0077FF]/20 hover:text-[#0077FF] relative overflow-hidden transition-all group"
+                className="w-full h-12 rounded-xl bg-[#0077FF]/5 border-transparent text-[#0077FF] hover:bg-[#0077FF]/10 hover:text-[#0077FF] shadow-sm relative overflow-hidden transition-all group"
               >
                 {loadingProvider === "vk" ? (
                   <Loader2 className="w-5 h-5 animate-spin absolute left-4" />
                 ) : (
                   <VkontakteIcon className="w-5 h-5 absolute left-4 fill-current group-hover:scale-110 transition-transform" />
                 )}
-                <span className="font-semibold text-sm">
-                  Войти через ВКонтакте
-                </span>
+                <span className="font-bold text-sm">Войти через ВКонтакте</span>
               </Button>
             </div>
 
-            <div className="mt-8 text-center text-xs font-medium text-slate-400">
+            <div className="mt-8 text-center text-xs font-medium text-slate-500">
               Нет аккаунта?{" "}
               <Link
                 href="/register"
-                className="text-white font-bold hover:text-primary transition-colors underline-offset-4 hover:underline"
+                className="text-slate-900 font-bold hover:text-primary transition-colors underline-offset-4 hover:underline"
               >
                 Зарегистрироваться
               </Link>

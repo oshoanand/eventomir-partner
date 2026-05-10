@@ -104,6 +104,12 @@
     @apply border-border;
   }
 
+  /* 🚨 CRITICAL EDGE FIX: Force html and body to never exceed 100% width and hide horizontal overflow globally */
+  html,
+  body {
+    max-width: 100%;
+  }
+
   html {
     /* NATIVE UX: Prevents the blue flash when tapping links/buttons on Android/iOS */
     -webkit-tap-highlight-color: transparent;
@@ -112,7 +118,8 @@
   body {
     font-family: Arial, Helvetica, sans-serif;
     /* NATIVE UX: Prevents accidental text selection when swiping, enables smooth font rendering */
-    @apply bg-background text-foreground antialiased select-none md:select-auto;
+    /* Also added w-full just to be safe */
+    @apply bg-background text-foreground antialiased select-none md:select-auto w-full;
   }
 
   /* NATIVE UX: Explicitly re-enable text selection for actual readable content so users can still copy descriptions/names */

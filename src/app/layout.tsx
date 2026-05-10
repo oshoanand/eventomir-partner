@@ -40,6 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ogImage = `${appDomain}${ogImage}`;
   }
 
+  console.log(ogImage);
   return {
     metadataBase: new URL(appDomain),
     title: {
@@ -159,7 +160,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         />
       </head>
 
-      <body className="antialiased flex flex-col min-h-screen font-sans">
+      {/* 🚨 EDGE BROWSER FIX: Added max-w-[100vw] overflow-x-hidden */}
+      <body className="antialiased flex flex-col min-h-screen font-sans max-w-[100vw] overflow-x-hidden">
         <Providers initialSettings={settings}>{children}</Providers>
       </body>
     </html>

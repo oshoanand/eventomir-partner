@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
-import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
 import {
@@ -46,8 +45,6 @@ import {
   Briefcase,
   Users,
   Sparkles,
-  TrendingUp,
-  AlertCircle,
   ArrowRight,
 } from "lucide-react";
 
@@ -243,10 +240,10 @@ const RegisterPartnerPage = () => {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="animate-pulse flex flex-col items-center">
           <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6"></div>
-          <div className="h-4 w-32 bg-slate-800 rounded"></div>
+          <div className="h-4 w-32 bg-slate-200 rounded"></div>
         </div>
       </div>
     );
@@ -255,19 +252,19 @@ const RegisterPartnerPage = () => {
   // --- ALREADY LOGGED IN STATE ---
   if (status === "authenticated") {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-950 relative overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('/images/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none"></div>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 relative overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px] pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.03] bg-[url('/images/noise.svg')] mix-blend-multiply pointer-events-none"></div>
 
-        <Card className="w-full max-w-[400px] text-center shadow-2xl border-slate-800 bg-slate-900/80 backdrop-blur-xl rounded-[2rem] overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-500">
+        <Card className="w-full max-w-[400px] text-center shadow-2xl shadow-slate-200/50 border-slate-200 bg-white/80 backdrop-blur-xl rounded-[2rem] overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-500">
           <CardHeader className="pb-4 pt-10">
-            <div className="mx-auto bg-emerald-500/10 text-emerald-400 h-20 w-20 flex items-center justify-center rounded-full mb-6 ring-8 ring-emerald-500/5">
+            <div className="mx-auto bg-emerald-100 text-emerald-600 h-20 w-20 flex items-center justify-center rounded-full mb-6 ring-8 ring-emerald-50">
               <CheckCircle2 className="h-10 w-10" />
             </div>
-            <CardTitle className="text-2xl font-bold tracking-tight text-white">
+            <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
               Вы уже авторизованы
             </CardTitle>
-            <CardDescription className="text-sm mt-2 text-slate-400">
+            <CardDescription className="text-sm mt-2 text-slate-500">
               Вы уже вошли в систему. Нет необходимости регистрироваться заново.
             </CardDescription>
           </CardHeader>
@@ -275,7 +272,7 @@ const RegisterPartnerPage = () => {
             <Button
               variant="outline"
               asChild
-              className="w-full h-12 rounded-xl font-bold bg-transparent border-slate-700 text-white hover:bg-slate-800 hover:text-white"
+              className="w-full h-12 rounded-xl font-bold bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-sm"
             >
               <Link href="/dashboard">
                 Перейти в Дашборд <ArrowRight className="ml-2 h-5 w-5" />
@@ -290,27 +287,27 @@ const RegisterPartnerPage = () => {
   // --- SUCCESS STATE ---
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-950 relative overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/20 blur-[120px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('/images/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none"></div>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 relative overflow-hidden">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.03] bg-[url('/images/noise.svg')] mix-blend-multiply pointer-events-none"></div>
 
-        <Card className="w-full max-w-[440px] text-center shadow-2xl border-emerald-900/50 bg-slate-900/80 backdrop-blur-xl rounded-[2rem] overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-500">
+        <Card className="w-full max-w-[440px] text-center shadow-2xl shadow-slate-200/50 border-slate-200 bg-white/90 backdrop-blur-xl rounded-[2rem] overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-500">
           <CardHeader className="pb-4 pt-10">
-            <div className="mx-auto bg-emerald-500/20 text-emerald-400 h-20 w-20 flex items-center justify-center rounded-full mb-6 ring-8 ring-emerald-500/10">
+            <div className="mx-auto bg-emerald-100 text-emerald-600 h-20 w-20 flex items-center justify-center rounded-full mb-6 ring-8 ring-emerald-50">
               <CheckCircle2 className="h-10 w-10" />
             </div>
-            <CardTitle className="text-3xl font-bold tracking-tight text-white">
+            <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">
               Заявка принята!
             </CardTitle>
           </CardHeader>
           <CardContent className="px-8 pb-10">
-            <p className="text-slate-300 text-base leading-relaxed mb-8">
+            <p className="text-slate-500 text-base leading-relaxed mb-8 font-medium">
               Мы отправили письмо со ссылкой для подтверждения на ваш Email.
               Пожалуйста, проверьте почту (включая папку "Спам").
             </p>
             <Button
               asChild
-              className="w-full h-12 rounded-xl font-bold shadow-[0_0_20px_rgba(var(--primary),0.2)] hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] transition-all"
+              className="w-full h-12 rounded-xl font-bold shadow-[0_4px_14px_rgba(249,115,22,0.25)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.35)] transition-all"
             >
               <Link href="/login">Перейти ко входу</Link>
             </Button>
@@ -322,56 +319,53 @@ const RegisterPartnerPage = () => {
 
   // --- MAIN REGISTRATION STATE (Split Screen) ---
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-950 overflow-hidden">
-      {/* ======================= LEFT PANE (BRANDING & IMAGE) ======================= */}
-      {/* Fixed on desktop, hidden on mobile */}
-      <div className="hidden lg:flex fixed left-0 top-0 bottom-0 w-1/2 flex-col justify-between p-12 overflow-hidden bg-slate-900 border-r border-slate-800/60 z-0">
-        <Image
-          src="/images/loginBG.webp"
-          alt="Eventomir Events"
-          fill
-          className="object-cover opacity-40 mix-blend-overlay"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
-        <div className="absolute inset-0 bg-[url('/images/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50 overflow-hidden relative">
+      {/* ======================= GLOBAL AMBIENT BACKGROUND ======================= */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.03] bg-[url('/images/noise.svg')] mix-blend-multiply pointer-events-none"></div>
 
-        <div className="relative z-10 flex items-center gap-2">
+      {/* ======================= LEFT PANE (BRANDING) ======================= */}
+      {/* Fixed on desktop, hidden on mobile */}
+      <div className="hidden lg:flex fixed left-0 top-0 bottom-0 w-1/2 flex-col justify-between p-12 overflow-hidden bg-slate-100/30  z-0">
+        <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="text-2xl font-black tracking-tighter transition-colors text-white"
+            className="text-2xl font-black tracking-tighter transition-colors text-primary"
           >
             Eventomir <span className="opacity-70 font-medium">Партнер</span>
           </Link>
         </div>
 
-        <div className="relative z-10 space-y-8 max-w-xl pb-8">
-          <div className="p-5 rounded-2xl bg-white/10 border border-white/10 backdrop-blur-md shadow-2xl w-72 animate-in slide-in-from-bottom-8 duration-700">
+        <div className=" space-y-8 max-w-xl py-8">
+          <div className="p-5 rounded-2xl bg-white/80 border border-white/60 backdrop-blur-md shadow-xl shadow-slate-200/50 w-72 animate-in slide-in-from-bottom-8 duration-700">
             <div className="flex items-center gap-4 mb-3">
-              <div className="p-2.5 bg-emerald-500/20 rounded-xl">
-                <Users className="w-5 h-5 text-emerald-400" />
+              <div className="p-2.5 bg-emerald-100 rounded-xl border border-emerald-200/50">
+                <Users className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-xs text-slate-300 font-medium">
+                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">
                   Потенциальные клиенты
                 </p>
-                <p className="text-xl font-bold text-white">10,000+ в месяц</p>
+                <p className="text-xl font-black text-slate-900">
+                  10,000+ в месяц
+                </p>
               </div>
             </div>
-            <div className="w-full bg-slate-800/50 rounded-full h-1.5">
-              <div className="bg-emerald-400 h-1.5 rounded-full w-[100%] shadow-[0_0_10px_rgba(52,211,153,0.8)]"></div>
+            <div className="w-full bg-slate-200 rounded-full h-1.5 shadow-inner">
+              <div className="bg-emerald-500 h-1.5 rounded-full w-[100%] shadow-sm"></div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-medium backdrop-blur-md">
-              <Sparkles className="w-4 h-4" /> B2B Платформа
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-700 text-sm font-bold shadow-sm backdrop-blur-md">
+              <Sparkles className="w-4 h-4 text-primary" /> B2B Платформа
             </div>
-            <h2 className="text-4xl font-bold text-white leading-tight">
+            <h2 className="text-4xl font-bold text-slate-900 leading-tight tracking-tight">
               Присоединяйтесь к сообществу <br />
               <span className="text-primary">профессионалов.</span>
             </h2>
-            <p className="text-slate-400 text-lg leading-relaxed max-w-md">
+            <p className="text-slate-500 text-lg leading-relaxed max-w-md font-medium">
               Находите новые заказы, автоматизируйте бронирования и
               масштабируйте свой бизнес вместе с нами.
             </p>
@@ -382,26 +376,21 @@ const RegisterPartnerPage = () => {
       {/* ======================= RIGHT PANE (REGISTRATION FORM) ======================= */}
       {/* Takes full width on mobile, right half on desktop. Scrolls naturally. */}
       <div className="flex w-full lg:w-1/2 lg:ml-auto min-h-screen items-center justify-center p-4 sm:px-8 sm:py-4 relative z-10">
-        {/* Ambient Glowing Background (Visible mostly on mobile) */}
-        <div className="absolute top-[-10%] right-[-5%] w-[60%] h-[60%] rounded-full bg-primary/10 blur-[120px] pointer-events-none lg:bg-primary/5" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[60%] h-[60%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none lg:bg-blue-600/5" />
-        <div className="absolute inset-0 bg-[url('/images/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none lg:hidden"></div>
-
-        <Card className="w-full max-w-[500px] shadow-2xl border-slate-800/60 bg-slate-900/80 lg:bg-slate-900/40 backdrop-blur-2xl rounded-[2rem] overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-500 my-4">
-          <CardHeader className="space-y-2 pt-10 pb-6 text-center border-b border-slate-800/50">
+        <Card className="w-full max-w-[500px] shadow-2xl shadow-slate-200/60 border-slate-200 bg-white/90 lg:bg-white/60 backdrop-blur-2xl rounded-[2rem] overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-500 my-4">
+          <CardHeader className="space-y-2 pt-10 pb-6 text-center border-b border-slate-100">
             <div className="lg:hidden mb-2">
-              <h1 className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400">
+              <h1 className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary to-orange-400">
                 Eventomir{" "}
-                <span className="opacity-70  text-2xl font-black tracking-tighter transition-colors text-white">
+                <span className="opacity-80 font-medium text-slate-900">
                   Партнер
                 </span>
               </h1>
             </div>
 
-            <CardTitle className="text-2xl font-bold text-white hidden lg:block">
+            <CardTitle className="text-2xl font-bold text-slate-900 hidden lg:block">
               Создание аккаунта
             </CardTitle>
-            <CardDescription className="text-sm font-medium text-slate-400">
+            <CardDescription className="text-sm font-medium text-slate-500">
               Заполните данные для регистрации на платформе
             </CardDescription>
           </CardHeader>
@@ -418,7 +407,7 @@ const RegisterPartnerPage = () => {
                   name="accountType"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-400 ml-1">
+                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-500 ml-1">
                         Тип аккаунта
                       </FormLabel>
                       <FormControl>
@@ -435,8 +424,8 @@ const RegisterPartnerPage = () => {
                                 className="peer sr-only"
                               />
                             </FormControl>
-                            <FormLabel className="flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-950/50 p-4 hover:bg-slate-800/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-white text-slate-400 cursor-pointer transition-all h-full">
-                              <User className="mb-2 h-5 w-5 text-slate-500 peer-data-[state=checked]:text-primary" />
+                            <FormLabel className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-4 hover:bg-slate-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary text-slate-500 cursor-pointer transition-all h-full shadow-sm">
+                              <User className="mb-2 h-5 w-5" />
                               <span className="text-xs font-bold text-center leading-tight">
                                 Самозанятый
                               </span>
@@ -450,8 +439,8 @@ const RegisterPartnerPage = () => {
                                 className="peer sr-only"
                               />
                             </FormControl>
-                            <FormLabel className="flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-950/50 p-4 hover:bg-slate-800/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-white text-slate-400 cursor-pointer transition-all h-full">
-                              <Briefcase className="mb-2 h-5 w-5 text-slate-500 peer-data-[state=checked]:text-primary" />
+                            <FormLabel className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-4 hover:bg-slate-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary text-slate-500 cursor-pointer transition-all h-full shadow-sm">
+                              <Briefcase className="mb-2 h-5 w-5" />
                               <span className="text-xs font-bold text-center leading-tight">
                                 ИП
                               </span>
@@ -465,8 +454,8 @@ const RegisterPartnerPage = () => {
                                 className="peer sr-only"
                               />
                             </FormControl>
-                            <FormLabel className="flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-950/50 p-4 hover:bg-slate-800/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-white text-slate-400 cursor-pointer transition-all h-full">
-                              <Building className="mb-2 h-5 w-5 text-slate-500 peer-data-[state=checked]:text-primary" />
+                            <FormLabel className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-4 hover:bg-slate-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary text-slate-500 cursor-pointer transition-all h-full shadow-sm">
+                              <Building className="mb-2 h-5 w-5" />
                               <span className="text-xs font-bold text-center leading-tight">
                                 Юр. лицо
                               </span>
@@ -480,8 +469,8 @@ const RegisterPartnerPage = () => {
                                 className="peer sr-only"
                               />
                             </FormControl>
-                            <FormLabel className="flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-950/50 p-4 hover:bg-slate-800/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-white text-slate-400 cursor-pointer transition-all h-full">
-                              <Users className="mb-2 h-5 w-5 text-slate-500 peer-data-[state=checked]:text-primary" />
+                            <FormLabel className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-4 hover:bg-slate-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary text-slate-500 cursor-pointer transition-all h-full shadow-sm">
+                              <Users className="mb-2 h-5 w-5" />
                               <span className="text-xs font-bold text-center leading-tight">
                                 Агентство
                               </span>
@@ -489,7 +478,7 @@ const RegisterPartnerPage = () => {
                           </FormItem>
                         </RadioGroup>
                       </FormControl>
-                      <FormMessage className="ml-1 text-xs text-red-400" />
+                      <FormMessage className="ml-1 text-xs text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -500,7 +489,7 @@ const RegisterPartnerPage = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-400 ml-1">
+                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-500 ml-1">
                         {["selfEmployed", "individualEntrepreneur"].includes(
                           accountType,
                         )
@@ -509,9 +498,9 @@ const RegisterPartnerPage = () => {
                       </FormLabel>
                       <FormControl>
                         <div className="relative group">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                          <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                           <Input
-                            className="pl-12 h-12 rounded-xl bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600 focus:bg-slate-900 focus:border-primary/50 transition-all text-sm"
+                            className="pl-12 h-12 rounded-xl bg-slate-50/50 hover:bg-slate-100/50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary/50 transition-all text-sm shadow-sm"
                             placeholder={
                               [
                                 "selfEmployed",
@@ -524,7 +513,7 @@ const RegisterPartnerPage = () => {
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="ml-1 text-xs text-red-400" />
+                      <FormMessage className="ml-1 text-xs text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -533,26 +522,26 @@ const RegisterPartnerPage = () => {
                 {["individualEntrepreneur", "legalEntity", "agency"].includes(
                   accountType,
                 ) && (
-                  <div className="p-5 bg-slate-900/50 border border-slate-800 rounded-2xl space-y-5 animate-in fade-in zoom-in-95">
+                  <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-5 animate-in fade-in zoom-in-95 shadow-sm">
                     <FormField
                       control={form.control}
                       name="companyName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-400 ml-1">
+                          <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-500 ml-1">
                             Название (необязательно)
                           </FormLabel>
                           <FormControl>
                             <div className="relative group">
-                              <Building className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                              <Building className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                               <Input
-                                className="pl-12 h-12 rounded-xl bg-slate-950/80 border-slate-800 text-white placeholder:text-slate-600 focus:bg-slate-900 focus:border-primary/50 transition-all text-sm"
+                                className="pl-12 h-12 rounded-xl bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-primary/50 transition-all text-sm shadow-sm"
                                 placeholder="Например, Eventomir Agency"
                                 {...field}
                               />
                             </div>
                           </FormControl>
-                          <FormMessage className="ml-1 text-xs text-red-400" />
+                          <FormMessage className="ml-1 text-xs text-red-500" />
                         </FormItem>
                       )}
                     />
@@ -561,20 +550,20 @@ const RegisterPartnerPage = () => {
                       name="inn"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-400 ml-1">
+                          <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-500 ml-1">
                             ИНН
                           </FormLabel>
                           <FormControl>
                             <div className="relative group">
-                              <FileText className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                              <FileText className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                               <Input
-                                className="pl-12 h-12 rounded-xl bg-slate-950/80 border-slate-800 text-white placeholder:text-slate-600 focus:bg-slate-900 focus:border-primary/50 transition-all text-sm font-mono"
+                                className="pl-12 h-12 rounded-xl bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-primary/50 transition-all text-sm font-mono shadow-sm"
                                 placeholder="10 или 12 цифр"
                                 {...field}
                               />
                             </div>
                           </FormControl>
-                          <FormMessage className="ml-1 text-xs text-red-400" />
+                          <FormMessage className="ml-1 text-xs text-red-500" />
                         </FormItem>
                       )}
                     />
@@ -587,21 +576,21 @@ const RegisterPartnerPage = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-400 ml-1">
+                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-500 ml-1">
                         Email
                       </FormLabel>
                       <FormControl>
                         <div className="relative group">
-                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                           <Input
-                            className="pl-12 h-12 rounded-xl bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600 focus:bg-slate-900 focus:border-primary/50 transition-all text-sm"
+                            className="pl-12 h-12 rounded-xl bg-slate-50/50 hover:bg-slate-100/50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary/50 transition-all text-sm shadow-sm"
                             type="email"
                             placeholder="mail@example.com"
                             {...field}
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="ml-1 text-xs text-red-400" />
+                      <FormMessage className="ml-1 text-xs text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -613,14 +602,14 @@ const RegisterPartnerPage = () => {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-400 ml-1">
+                        <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-500 ml-1">
                           Телефон
                         </FormLabel>
                         <FormControl>
                           <div className="relative group">
-                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                             <Input
-                              className="pl-12 h-12 rounded-xl bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600 focus:bg-slate-900 focus:border-primary/50 transition-all text-sm"
+                              className="pl-12 h-12 rounded-xl bg-slate-50/50 hover:bg-slate-100/50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary/50 transition-all text-sm shadow-sm"
                               placeholder="+7 999 000 00-00"
                               value={field.value}
                               onChange={(e) =>
@@ -631,7 +620,7 @@ const RegisterPartnerPage = () => {
                             />
                           </div>
                         </FormControl>
-                        <FormMessage className="ml-1 text-xs text-red-400" />
+                        <FormMessage className="ml-1 text-xs text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -641,14 +630,14 @@ const RegisterPartnerPage = () => {
                     name="city"
                     render={({ field }) => (
                       <FormItem className="relative">
-                        <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-400 ml-1">
+                        <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-500 ml-1">
                           Город
                         </FormLabel>
                         <FormControl>
                           <div className="relative group">
-                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                             <Input
-                              className="pl-12 h-12 rounded-xl bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600 focus:bg-slate-900 focus:border-primary/50 transition-all text-sm"
+                              className="pl-12 h-12 rounded-xl bg-slate-50/50 hover:bg-slate-100/50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary/50 transition-all text-sm shadow-sm"
                               placeholder="Поиск города..."
                               value={cityInput}
                               onChange={handleCitySearch}
@@ -657,11 +646,11 @@ const RegisterPartnerPage = () => {
                           </div>
                         </FormControl>
                         {filteredCities.length > 0 && (
-                          <div className="absolute z-50 w-full bg-slate-900 border border-slate-800 rounded-xl shadow-2xl mt-2 py-2 overflow-hidden animate-in fade-in">
+                          <div className="absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-xl mt-2 py-2 overflow-hidden animate-in fade-in">
                             {filteredCities.map((city) => (
                               <div
                                 key={city}
-                                className="px-4 py-2.5 hover:bg-slate-800 cursor-pointer text-sm font-medium text-slate-300 hover:text-white transition-colors"
+                                className="px-4 py-2.5 hover:bg-slate-50 cursor-pointer text-sm font-medium text-slate-700 transition-colors"
                                 onClick={() => {
                                   setCityInput(city);
                                   form.setValue("city", city);
@@ -673,7 +662,7 @@ const RegisterPartnerPage = () => {
                             ))}
                           </div>
                         )}
-                        <FormMessage className="ml-1 text-xs text-red-400" />
+                        <FormMessage className="ml-1 text-xs text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -685,21 +674,21 @@ const RegisterPartnerPage = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-400 ml-1">
+                      <FormLabel className="font-semibold text-xs uppercase tracking-wider text-slate-500 ml-1">
                         Пароль
                       </FormLabel>
                       <FormControl>
                         <div className="relative group">
-                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500 group-focus-within:text-primary transition-colors" />
+                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                           <Input
-                            className="pl-12 h-12 rounded-xl bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600 focus:bg-slate-900 focus:border-primary/50 transition-all text-sm"
+                            className="pl-12 h-12 rounded-xl bg-slate-50/50 hover:bg-slate-100/50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-primary/50 transition-all text-sm shadow-sm"
                             type="password"
                             placeholder="••••••••"
                             {...field}
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="ml-1 text-xs text-red-400" />
+                      <FormMessage className="ml-1 text-xs text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -709,21 +698,21 @@ const RegisterPartnerPage = () => {
                   control={form.control}
                   name="agreement"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 mt-6 p-4 bg-slate-900/50 rounded-xl border border-slate-800 transition-colors hover:bg-slate-800/50">
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 mt-6 p-4 bg-slate-50 border border-slate-200 rounded-xl transition-colors hover:bg-slate-100/50 shadow-sm">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
                           onCheckedChange={field.onChange}
-                          className="mt-0.5 border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                          className="mt-0.5 border-slate-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                         />
                       </FormControl>
                       <div className="space-y-1 leading-tight">
-                        <FormLabel className="text-xs font-medium text-slate-400 cursor-pointer">
+                        <FormLabel className="text-xs font-medium text-slate-500 cursor-pointer">
                           Я принимаю{" "}
                           <Link
                             href="/documents/terms-of-service"
                             target="_blank"
-                            className="text-white hover:text-primary transition-colors underline underline-offset-2"
+                            className="text-slate-900 hover:text-primary transition-colors underline underline-offset-2"
                           >
                             Пользовательское соглашение
                           </Link>{" "}
@@ -731,13 +720,13 @@ const RegisterPartnerPage = () => {
                           <Link
                             href="/documents/privacy-policy"
                             target="_blank"
-                            className="text-white hover:text-primary transition-colors underline underline-offset-2"
+                            className="text-slate-900 hover:text-primary transition-colors underline underline-offset-2"
                           >
                             Политику обработки данных
                           </Link>
                           . *
                         </FormLabel>
-                        <FormMessage className="text-xs text-red-400" />
+                        <FormMessage className="text-xs text-red-500" />
                       </div>
                     </FormItem>
                   )}
@@ -747,7 +736,7 @@ const RegisterPartnerPage = () => {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-12 mt-6 rounded-xl font-bold text-sm shadow-[0_0_20px_rgba(var(--primary),0.2)] hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="w-full h-12 mt-6 rounded-xl font-bold text-sm shadow-[0_4px_14px_rgba(249,115,22,0.25)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all"
                 >
                   {isSubmitting ? (
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -755,11 +744,11 @@ const RegisterPartnerPage = () => {
                   {isSubmitting ? "Создание аккаунта..." : "Зарегистрироваться"}
                 </Button>
 
-                <div className="mt-8 text-center text-xs font-medium text-slate-400">
+                <div className="mt-8 text-center text-xs font-medium text-slate-500">
                   Уже есть аккаунт?{" "}
                   <Link
                     href="/login"
-                    className="text-white font-bold hover:text-primary transition-colors underline-offset-4 hover:underline"
+                    className="text-slate-900 font-bold hover:text-primary transition-colors underline-offset-4 hover:underline"
                   >
                     Войти
                   </Link>

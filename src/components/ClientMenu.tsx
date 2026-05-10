@@ -82,7 +82,7 @@ const ClientMenu: React.FC<ClientMenuProps> = ({
           onClick={() => setIsMenuOpen(true)}
           className={`relative flex items-center justify-center h-10 w-10 rounded-full transition-all hover:scale-105 active:scale-95 ${
             useTransparentStyle
-              ? "bg-white/10 hover:bg-white/20 text-white"
+              ? "bg-primary/10 hover:bg-primary/20 text-primary"
               : "bg-primary/10 hover:bg-primary/20 text-primary"
           }`}
         >
@@ -228,8 +228,8 @@ const ClientMenu: React.FC<ClientMenuProps> = ({
               variant="ghost"
               className={`font-semibold rounded-full  ${
                 useTransparentStyle
-                  ? "hover:bg-white/10 hover:text-white text-white"
-                  : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                  ? "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                  : "text-slate-700 hover:text-slate-900 hover:bg-primary/30"
               }`}
             >
               Войти
@@ -248,7 +248,7 @@ const ClientMenu: React.FC<ClientMenuProps> = ({
               variant="outline"
               className={`h-11 gap-2 pl-2 pr-4 rounded-full border-transparent transition-colors focus-visible:ring-0 ${
                 useTransparentStyle
-                  ? "bg-white/10 hover:bg-white/20 hover:text-white"
+                  ? "bg-primary/10 hover:bg-primary/20 hover:text-primary"
                   : "bg-primary/10 hover:bg-primary/20 hover:text-primary"
               }`}
             >
