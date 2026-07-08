@@ -3,7 +3,7 @@
 import * as React from "react";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // ScrollArea root component, wraps the content that needs scrolling
 // Корневой компонент ScrollArea, оборачивает контент, который нужно прокручивать

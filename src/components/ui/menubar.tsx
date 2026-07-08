@@ -4,7 +4,7 @@ import * as React from "react";
 import * as MenubarPrimitive from "@radix-ui/react-menubar";
 import { Check, ChevronRight, Circle } from "lucide-react"; // Icon components // Компоненты иконок
 
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // MenubarMenu component (wrapper for a menu) // Компонент MenubarMenu (обертка для меню)
 const MenubarMenu = MenubarPrimitive.Menu;

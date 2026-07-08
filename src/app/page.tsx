@@ -80,7 +80,7 @@ export default function PartnerLandingPage() {
 
               <motion.div variants={fadeUp}>
                 <h1 className="text-3xl md:text-4xl xxl:text-[4rem] font-black tracking-tight leading-[1.1] mb-6 text-slate-900">
-                  Масштабируйте свой <br />
+                  Масштабируйте <br />
                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-orange-400">
                     ивент-бизнес
                   </span>{" "}
@@ -92,9 +92,9 @@ export default function PartnerLandingPage() {
                 variants={fadeUp}
                 className="text-md md:text-lg text-slate-500 mb-10 leading-relaxed font-medium"
               >
-                Eventomir объединяет организаторов мероприятий, артистов,
-                рестораны и площадки с тысячами клиентов ежедневно. Увеличьте
-                свою выручку без скрытых комиссий и абонентской платы.
+                Eventomir помогает найти исполнителей и заказчиков(клиентов)
+                ивент-мероприятий. Участвуй в программе и зарабатывай вместе с
+                нами.
               </motion.p>
 
               <motion.div
@@ -251,8 +251,8 @@ export default function PartnerLandingPage() {
               variants={fadeUp}
               className="text-lg text-slate-500 font-medium"
             >
-              Мы создали экосистему, в которой ваш бизнес стабильно получает
-              новых клиентов без лишних затрат на маркетинг.
+              Мы создали экосистему, в которой Вы сможете стабильно(регулярно
+              получать) зарабатывать на привлечение исполнителей на наш сервис.
             </motion.p>
           </div>
 
@@ -275,8 +275,7 @@ export default function PartnerLandingPage() {
                 Огромная аудитория
               </h3>
               <p className="text-slate-500 font-medium leading-relaxed">
-                Получите доступ к тысячам заказчиков, которые ежедневно ищут
-                исполнителей и площадки для своих мероприятий.
+                Наш сервис предоставляет широкий выбор категорий.
               </p>
             </motion.div>
 
@@ -289,11 +288,11 @@ export default function PartnerLandingPage() {
                 <Wallet className="w-7 h-7 text-emerald-600" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">
-                Без скрытых сборов
+                Прозрачные выплаты
               </h3>
               <p className="text-slate-500 font-medium leading-relaxed">
-                Вы платите только небольшую комиссию за реально закрытые сделки.
-                Никакой абонентской платы или платы за отклики.
+                Получайте прозрачные выплаты с каждого оплаченного исполнителем
+                тарифа
               </p>
             </motion.div>
 
@@ -309,13 +308,13 @@ export default function PartnerLandingPage() {
                 Мощная аналитика
               </h3>
               <p className="text-slate-500 font-medium leading-relaxed">
-                Отслеживайте статистику просмотров, конверсию в заказы и свои
-                доходы в режиме реального времени через удобный кабинет.
+                Отслеживайте регистрацию, статистику, клики, переходы и оплату в
+                личном кабинете партнера в режиме реального времени
               </p>
             </motion.div>
 
             {/* Benefit 4 */}
-            <motion.div
+            {/* <motion.div
               variants={fadeUp}
               className="bg-white p-8 rounded-3xl border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 shadow-sm"
             >
@@ -329,7 +328,7 @@ export default function PartnerLandingPage() {
                 Встроенный календарь позволяет легко управлять занятостью,
                 избегать накладок и автоматически принимать заявки.
               </p>
-            </motion.div>
+            </motion.div> */}
 
             {/* Benefit 5 */}
             <motion.div
@@ -339,12 +338,9 @@ export default function PartnerLandingPage() {
               <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 shadow-sm border border-indigo-100/50">
                 <ShieldCheck className="w-7 h-7 text-indigo-600" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
-                Безопасные сделки
-              </h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Выплаты</h3>
               <p className="text-slate-500 font-medium leading-relaxed">
-                Все расчеты защищены. Мы гарантируем своевременные выплаты и
-                помогаем в разрешении спорных ситуаций с клиентами.
+                Ежедневные зачисления на кошелек
               </p>
             </motion.div>
 
@@ -358,8 +354,7 @@ export default function PartnerLandingPage() {
                 Готовы начать?
               </h3>
               <p className="text-primary-50 font-medium mb-8 relative z-10">
-                Регистрация займет не более 2 минут. Создайте профиль и
-                получайте заказы уже сегодня.
+                Создайте профиль партнера и привлекайте исполнителей уже сегодня
               </p>
 
               {!isLoggedIn && (
@@ -396,23 +391,23 @@ export default function PartnerLandingPage() {
                   {
                     step: "1",
                     title: "Зарегистрируйтесь",
-                    desc: "Заполните данные о вашей компании или услугах.",
+                    desc: "Заполните данные о вашей компании.",
                   },
                   {
                     step: "2",
-                    title: "Оформите профиль",
-                    desc: "Добавьте красивые фото, описание и прайс-лист.",
+                    title: "Продвигайте платформу",
+                    desc: "Используйте реферальную ссылку.",
                   },
                   {
                     step: "3",
-                    title: "Получайте заявки",
-                    desc: "Клиенты сами находят вас и отправляют запросы.",
+                    title: "Получайте выплаты",
+                    desc: "Выплаты с каждого оплаченного исполнителем тарифа",
                   },
-                  {
-                    step: "4",
-                    title: "Зарабатывайте",
-                    desc: "Успешно проводите мероприятия и выводите средства.",
-                  },
+                  // {
+                  //   step: "4",
+                  //   title: "Зарабатывайте",
+                  //   desc: "Успешно проводите мероприятия и выводите средства.",
+                  // },
                 ].map((item, i) => (
                   <motion.div
                     key={i}
@@ -495,8 +490,7 @@ export default function PartnerLandingPage() {
               transition={{ delay: 0.1 }}
               className="text-primary-foreground/80 text-md md:text-lg max-w-3xl mx-auto mb-10"
             >
-              Присоединяйтесь к сообществу профессионалов ивент-индустрии прямо
-              сейчас.
+              Создайте профиль партнера и привлекайте исполнителей уже сегодня
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -506,7 +500,7 @@ export default function PartnerLandingPage() {
             >
               <Link href="/register">
                 <button className="px-10 py-5 bg-white text-primary text-lg font-bold rounded-2xl hover:scale-105 hover:shadow-2xl transition-all flex items-center justify-center gap-2 mx-auto">
-                  Создать аккаунт бесплатно
+                  Создать аккаунт
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </Link>

@@ -26,11 +26,11 @@ const Footer = () => {
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute inset-0 opacity-[0.03] bg-[url('/images/noise.svg')] mix-blend-multiply pointer-events-none"></div>
 
-      <div className=" mx-auto px-5 md:px-8 relative z-10">
+      <div className="mx-auto px-5 md:px-8 relative z-10">
         {/* Main Footer Content: Flex layout instead of Grid */}
-        <div className="flex flex-col items-center justify-between gap-10 text-center md:text-left">
+        <div className="flex flex-col items-center justify-between gap-4 text-center ">
           {/* 1. Brand & Info */}
-          <div className="flex flex-col items-center  space-y-4 max-w-md">
+          <div className="flex flex-col items-center  space-y-2 max-w-lg">
             <Link
               href="/"
               className="text-3xl font-semibold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary to-orange-400 transition-colors"
@@ -40,9 +40,9 @@ const Footer = () => {
                 Партнер
               </span>
             </Link>
-            <p className="text-sm text-slate-500 font-medium leading-relaxed">
-              Платформа для масштабирования вашего ивент-бизнеса. Находите новых
-              клиентов и управляйте заказами в одной экосистеме.
+            <p className=" text-xs md:text-sm text-slate-500 font-medium leading-relaxed">
+              Программа ивент-бизнеса для партнеров. Привлекайте иполнителей и
+              зарабатывайте вместе с eventomir.ru
             </p>
           </div>
 
@@ -71,10 +71,27 @@ const Footer = () => {
             >
               Справка и Документы
             </Link>
+
+            <Link
+              href={`${mainAppUrl}/documents#privacy`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary transition-colors underline-offset-4 hover:underline font-semibold"
+            >
+              Политика конфиденциальности
+            </Link>
+            <Link
+              href={`${mainAppUrl}/documents#terms`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary transition-colors underline-offset-4 hover:underline font-semibold"
+            >
+              Условия использования
+            </Link>
           </nav>
 
           {/* 3. Contacts & Socials */}
-          <div className="flex flex-col items-center md:items-end space-y-4">
+          {/* <div className="flex flex-col items-center md:items-end space-y-4">
             {isLoading ? (
               <div className="space-y-3 flex flex-col items-end">
                 <Skeleton className="h-5 w-40 bg-slate-200" />
@@ -132,41 +149,21 @@ const Footer = () => {
                 </div>
               </>
             )}
-          </div>
+          </div> */}
         </div>
 
         <Separator className="my-8 bg-slate-200/80" />
 
         {/* Bottom Footer: Legal & Copyright */}
-        <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-6 text-xs text-slate-500 font-medium">
-          <p className="flex items-centergap-1 md:gap-3 text-xs md:text-sm">
-            &copy; {currentYear} ООО «АМУЛЕТ КОМПАНИ». Все права защищены.
-            <span className="px-2 py-0.5 bg-slate-200/80 rounded text-[9px] font-black uppercase tracking-widest text-slate-600">
-              18+
-            </span>
-          </p>
-
-          <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
-            <span className="hidden md:inline font-semibold">
-              ИНН: 6319258622 • ОГРН: 1226300038360
-            </span>
-            <Link
-              href={`${mainAppUrl}/documents#privacy`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors underline-offset-4 hover:underline font-semibold"
-            >
-              Конфиденциальность
-            </Link>
-            <Link
-              href={`${mainAppUrl}/documents#terms`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-primary transition-colors underline-offset-4 hover:underline font-semibold"
-            >
-              Условия использования
-            </Link>
-          </div>
+        <div className="flex flex-col items-center justify-between gap-4 text-xs text-slate-500 font-medium">
+          {/* <div className="flex flex-col items-center  space-y-2 max-w-lg">
+            <small className="font-semibold">
+              © eventomir.ru, 2026 ООО «АМУЛЕТ КОМПАНИ» осуществляет
+              деятельность в области информационных технологий. Вид деятельности
+              (код): 2.01. На информационном ресурсе применяются
+              рекомендательные технологии.
+            </small>
+          </div> */}
         </div>
       </div>
     </footer>

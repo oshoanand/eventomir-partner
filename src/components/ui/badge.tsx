@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // Define badge variants using class-variance-authority
 // Определяем варианты badge с помощью class-variance-authority

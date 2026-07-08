@@ -4,7 +4,7 @@ import * as React from "react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronDown } from "lucide-react";
 
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // Accordion root component
 // Корневой компонент аккордеона

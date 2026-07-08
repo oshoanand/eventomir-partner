@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // Define the props interface for the Input component, extending standard HTML input attributes
 // Определяем интерфейс пропсов для компонента Input, расширяя стандартные атрибуты HTML input

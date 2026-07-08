@@ -4,7 +4,7 @@ import * as React from "react";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { Check } from "lucide-react"; // Check icon component // Компонент иконки галочки
 
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // Checkbox component definition // Определение компонента Checkbox
 const Checkbox = React.forwardRef<

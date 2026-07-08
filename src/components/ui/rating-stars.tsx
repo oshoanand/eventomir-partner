@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Star } from "lucide-react"; // Star icon component // Компонент иконки звезды
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // Props interface for the RatingStars component
 // Интерфейс пропсов для компонента RatingStars

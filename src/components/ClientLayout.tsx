@@ -9,10 +9,12 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
 
   // Define paths where the Header and Footer should NOT be shown
+
   const isAuthPage =
     pathname === "/login" ||
     pathname === "/register" ||
-    pathname === "/forgot-password";
+    pathname === "/forgot-password" ||
+    pathname.startsWith("/reset-password/");
 
   useEffect(() => {
     document.body.style.overscrollBehaviorY = "none";

@@ -349,7 +349,7 @@ const LoginPage = () => {
 
             {/* OAuth Buttons */}
             <div className="flex flex-col space-y-3">
-              <Button
+              {/* <Button
                 type="button"
                 variant="outline"
                 onClick={() => handleOAuthLogin("google")}
@@ -362,7 +362,7 @@ const LoginPage = () => {
                   <GoogleIcon className="w-5 h-5 absolute left-4 group-hover:scale-110 transition-transform" />
                 )}
                 <span className="font-bold text-sm">Войти через Google</span>
-              </Button>
+              </Button> */}
 
               <Button
                 type="button"

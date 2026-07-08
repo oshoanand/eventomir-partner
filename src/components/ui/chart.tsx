@@ -3,7 +3,7 @@
 import * as React from "react";
 import * as RechartsPrimitive from "recharts"; // Import recharts primitives // Импортируем примитивы recharts
 
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 // Format: { ИМЯ_ТЕМЫ: CSS_СЕЛЕКТОР }

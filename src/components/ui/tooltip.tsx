@@ -3,7 +3,7 @@
 import * as React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // TooltipProvider component (provides context for tooltips) // Компонент TooltipProvider (предоставляет контекст для всплывающих подсказок)
 const TooltipProvider = TooltipPrimitive.Provider;

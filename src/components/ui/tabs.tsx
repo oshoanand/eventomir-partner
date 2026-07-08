@@ -3,7 +3,7 @@
 import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // Tabs root component // Корневой компонент Tabs
 const Tabs = TabsPrimitive.Root;

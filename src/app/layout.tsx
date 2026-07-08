@@ -40,7 +40,6 @@ export async function generateMetadata(): Promise<Metadata> {
     ogImage = `${appDomain}${ogImage}`;
   }
 
-  console.log(ogImage);
   return {
     metadataBase: new URL(appDomain),
     title: {

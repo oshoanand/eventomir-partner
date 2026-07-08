@@ -5,7 +5,7 @@ import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react"; // Close icon // Иконка закрытия
 
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // ToastProvider component (provides context for toasts) // Компонент ToastProvider (предоставляет контекст для тостов)
 const ToastProvider = ToastPrimitives.Provider;

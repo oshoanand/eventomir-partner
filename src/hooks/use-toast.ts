@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { toast as sonnerToast, type ExternalToast } from "sonner";
-import { cn } from "@/utils/helper";
+import { cn } from "@/utils/clx";
 
 // --- Типизация ---
 
